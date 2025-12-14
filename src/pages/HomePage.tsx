@@ -52,7 +52,7 @@ export default function HomePage() {
         <form onSubmit={handleJoinSession} className="space-y-4">
           <div>
             <label htmlFor="sessionCode" className="block text-sm font-medium mb-2">
-              Enter Team Number or Session Code
+              Enter a Session Code
             </label>
             <Input
               id="sessionCode"
@@ -62,7 +62,7 @@ export default function HomePage() {
                 setSessionCode(e.target.value)
                 setError('')
               }}
-              placeholder="e.g., 1111 or RobotSquad2024"
+              placeholder="e.g., 1234-turbo-bots or 5678-gear-grinders"
               autoFocus
             />
             {error && (
@@ -70,12 +70,12 @@ export default function HomePage() {
             )}
           </div>
           <Button type="submit" className="w-full flex items-center justify-center gap-2">
-            Join Session
+            Start Planning
             <ArrowRight className="w-4 h-4" />
           </Button>
         </form>
         <p className="mt-4 text-xs text-center text-gray-500 dark:text-gray-400">
-          Use your team number or create a custom code. Share it with teammates to collaborate in real-time.
+          Pick something unique to your team—anyone with the code can view and edit. Share it with teammates to collaborate.
         </p>
       </div>
 

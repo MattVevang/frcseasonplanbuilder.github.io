@@ -2,7 +2,7 @@
 
 All notable changes to FRC Season Plan Builder.
 
-## [Unreleased]
+## [1.7.0] - 2024-12-14
 
 ### Added
 - Session PIN protection - creators set a 4-digit PIN when creating sessions

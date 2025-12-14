@@ -1,7 +1,7 @@
 import { ReactNode } from 'react'
 import Header from './Header'
 
-const APP_VERSION = '1.6.1'
+const APP_VERSION = '1.7.0'
 
 interface LayoutProps {
   children: ReactNode

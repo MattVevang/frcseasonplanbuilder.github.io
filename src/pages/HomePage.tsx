@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Bot, Users, ListChecks, Target, ArrowRight } from 'lucide-react'
+import { Bot, Users, ListChecks, Target, ArrowRight, Clock } from 'lucide-react'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 
@@ -77,6 +77,17 @@ export default function HomePage() {
         <p className="mt-4 text-xs text-center text-gray-500 dark:text-gray-400">
           Use your team number or create a custom code. Share it with teammates to collaborate in real-time.
         </p>
+      </div>
+
+      {/* Data retention notice */}
+      <div className="flex items-start gap-3 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg max-w-md">
+        <Clock className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+        <div className="text-sm">
+          <p className="font-medium text-amber-800 dark:text-amber-200">30-Day Data Retention</p>
+          <p className="text-amber-700 dark:text-amber-300 mt-1">
+            Session data is automatically deleted after 30 days of inactivity. Use the Export feature to save a local backup of your plans.
+          </p>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 w-full max-w-3xl mt-8">

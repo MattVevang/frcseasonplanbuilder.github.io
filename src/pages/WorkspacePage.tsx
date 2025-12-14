@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ListChecks, Target, Download, Upload, Trash2, Wifi, WifiOff, Loader2 } from 'lucide-react'
+import { ListChecks, Target, Download, Upload, Trash2, Wifi, WifiOff, Loader2, Clock } from 'lucide-react'
 import Button from '../components/ui/Button'
 import Tabs from '../components/ui/Tabs'
 import CapabilityList from '../components/capabilities/CapabilityList'
@@ -96,8 +96,8 @@ export default function WorkspacePage() {
 
   return (
     <div className="space-y-6">
-      {/* Connection status */}
-      <div className="flex items-center justify-between">
+      {/* Connection status and data retention notice */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div className="flex items-center gap-2 text-sm">
           {isFirebaseEnabled ? (
             isConnected ? (
@@ -117,6 +117,10 @@ export default function WorkspacePage() {
               <span className="text-gray-500 dark:text-gray-400">Local mode - Data stored in browser only</span>
             </>
           )}
+        </div>
+        <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">
+          <Clock className="w-3.5 h-3.5" />
+          <span>Data expires after 30 days of inactivity</span>
         </div>
       </div>
 

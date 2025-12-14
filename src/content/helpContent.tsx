@@ -46,6 +46,9 @@ export const overviewHelp: HelpSection = {
         <p className="text-gray-600 dark:text-gray-300">
           Choose something unique that others won't guess—combining your team number with a memorable phrase works well (e.g., "1234-turbo-bots"). Anyone with your code can view and edit your session.
         </p>
+        <p className="text-gray-600 dark:text-gray-300 mt-2">
+          <strong>Tip:</strong> Once in a session, click the QR code icon in the header to display a scannable code—perfect for quickly getting teammates connected on their phones.
+        </p>
       </section>
 
       <section>

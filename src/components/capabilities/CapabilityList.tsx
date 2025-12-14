@@ -21,6 +21,8 @@ import SortControls from './SortControls'
 import Button from '../ui/Button'
 import Modal from '../ui/Modal'
 import EmptyState from './EmptyState'
+import HelpButton from '../ui/HelpButton'
+import { capabilitiesHelp } from '../../content/helpContent'
 
 interface CapabilityListProps {
   sessionCode: string
@@ -67,7 +69,12 @@ export default function CapabilityList({ sessionCode }: CapabilityListProps) {
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <SortControls type="capability" sessionCode={sessionCode} />
+        <div className="flex items-center gap-2">
+          <SortControls type="capability" sessionCode={sessionCode} />
+          <HelpButton title={capabilitiesHelp.title}>
+            {capabilitiesHelp.content}
+          </HelpButton>
+        </div>
         <Button
           onClick={() => setIsFormOpen(true)}
           className="flex items-center gap-2"

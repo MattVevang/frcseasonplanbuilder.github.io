@@ -35,7 +35,7 @@ export async function getCapabilities(sessionCode: string): Promise<Capability[]
       rank: data.rank,
       title: data.title,
       description: data.description,
-      points: data.points,
+      priority: data.priority || 'medium',
       createdAt: data.createdAt?.toDate() || new Date(),
       updatedAt: data.updatedAt?.toDate() || new Date(),
     }
@@ -66,7 +66,7 @@ export async function addCapability(
     rank,
     title: data.title,
     description: data.description,
-    points: data.points,
+    priority: data.priority,
     createdAt: Timestamp.fromDate(now),
     updatedAt: Timestamp.fromDate(now),
   })

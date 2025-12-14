@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useCapabilities } from '../../hooks/useCapabilities'
-import { Capability } from '../../types/capability'
+import { Capability, Priority, PRIORITY_OPTIONS } from '../../types/capability'
 import Button from '../ui/Button'
 import Input from '../ui/Input'
 import Textarea from '../ui/Textarea'
+import Select from '../ui/Select'
 
 interface CapabilityFormProps {
   capability?: Capability | null
@@ -14,7 +15,7 @@ interface CapabilityFormProps {
 export default function CapabilityForm({ capability, sessionCode, onClose }: CapabilityFormProps) {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
-  const [points, setPoints] = useState('')
+  const [priority, setPriority] = useState<Priority>('medium')
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   const { addCapability, updateCapability } = useCapabilities(sessionCode)
@@ -23,7 +24,7 @@ export default function CapabilityForm({ capability, sessionCode, onClose }: Cap
     if (capability) {
       setTitle(capability.title)
       setDescription(capability.description)
-      setPoints(capability.points.toString())
+      setPriority(capability.priority)
     }
   }, [capability])
 
@@ -32,13 +33,6 @@ export default function CapabilityForm({ capability, sessionCode, onClose }: Cap
 
     if (!title.trim()) {
       newErrors.title = 'Title is required'
-    }
-
-    const pointsNum = parseFloat(points)
-    if (isNaN(pointsNum)) {
-      newErrors.points = 'Points must be a number'
-    } else if (pointsNum < 0) {
-      newErrors.points = 'Points cannot be negative'
     }
 
     setErrors(newErrors)
@@ -53,7 +47,7 @@ export default function CapabilityForm({ capability, sessionCode, onClose }: Cap
     const data = {
       title: title.trim(),
       description: description.trim(),
-      points: parseFloat(points) || 0,
+      priority,
     }
 
     if (capability) {
@@ -87,16 +81,12 @@ export default function CapabilityForm({ capability, sessionCode, onClose }: Cap
         error={errors.description}
       />
 
-      <Input
-        label="Points"
-        id="points"
-        type="number"
-        step="0.5"
-        min="0"
-        value={points}
-        onChange={(e) => setPoints(e.target.value)}
-        placeholder="e.g., 5"
-        error={errors.points}
+      <Select
+        label="Priority"
+        id="priority"
+        value={priority}
+        onChange={(e) => setPriority(e.target.value as Priority)}
+        options={PRIORITY_OPTIONS}
       />
 
       <div className="flex gap-3 pt-2">

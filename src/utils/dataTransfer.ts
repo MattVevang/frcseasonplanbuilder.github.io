@@ -2,7 +2,7 @@ import { Capability } from '../types/capability'
 import { Strategy } from '../types/strategy'
 
 interface ExportData {
-  version: '1.0'
+  version: '2.0'
   exportedAt: string
   sessionCode: string
   capabilities: Capability[]
@@ -15,7 +15,7 @@ export function exportData(
   strategies: Strategy[]
 ): void {
   const data: ExportData = {
-    version: '1.0',
+    version: '2.0',
     exportedAt: new Date().toISOString(),
     sessionCode,
     capabilities,

@@ -24,7 +24,7 @@ export default function SortControls({ type, sessionCode }: SortControlsProps) {
 
   const handleSort = (field: string) => {
     if (type === 'capability') {
-      sortCapabilities(field as 'rank' | 'points' | 'title')
+      sortCapabilities(field as 'rank' | 'priority' | 'title')
     } else {
       sortStrategies(field as 'rank' | 'expectedPoints' | 'title' | 'phase')
     }
@@ -32,8 +32,8 @@ export default function SortControls({ type, sessionCode }: SortControlsProps) {
 
   const buttons = type === 'capability'
     ? [
-        { field: 'rank', label: 'Priority' },
-        { field: 'points', label: 'Points' },
+        { field: 'rank', label: 'Rank' },
+        { field: 'priority', label: 'Priority' },
         { field: 'title', label: 'Title' },
       ]
     : [

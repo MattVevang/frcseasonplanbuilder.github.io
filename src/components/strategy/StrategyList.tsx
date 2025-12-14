@@ -24,6 +24,8 @@ import ScoreProjection from './ScoreProjection'
 import Button from '../ui/Button'
 import Modal from '../ui/Modal'
 import EmptyState from '../capabilities/EmptyState'
+import HelpButton from '../ui/HelpButton'
+import { strategyHelp } from '../../content/helpContent'
 
 interface StrategyListProps {
   sessionCode: string
@@ -78,8 +80,13 @@ export default function StrategyList({ sessionCode }: StrategyListProps) {
       <ScoreProjection />
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <SortControls type="strategy" sessionCode={sessionCode} />
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+          <div className="flex items-center gap-2">
+            <SortControls type="strategy" sessionCode={sessionCode} />
+            <HelpButton title={strategyHelp.title}>
+              {strategyHelp.content}
+            </HelpButton>
+          </div>
           <PhaseFilter />
         </div>
         <Button

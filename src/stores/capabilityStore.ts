@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { v4 as uuidv4 } from 'uuid'
-import { Capability, CapabilityFormData, SortField, SortDirection } from '../types/capability'
+import { Capability, CapabilityFormData, SortField, SortDirection, PRIORITY_CONFIG } from '../types/capability'
 
 interface CapabilityState {
   capabilities: Capability[]
@@ -99,8 +99,8 @@ export const useCapabilityStore = create<CapabilityState>()(
             case 'rank':
               comparison = a.rank - b.rank
               break
-            case 'points':
-              comparison = a.points - b.points
+            case 'priority':
+              comparison = PRIORITY_CONFIG[a.priority].weight - PRIORITY_CONFIG[b.priority].weight
               break
             case 'title':
               comparison = a.title.localeCompare(b.title)

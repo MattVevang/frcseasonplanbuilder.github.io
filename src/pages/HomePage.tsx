@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { Bot, Users, ListChecks, Target, ArrowRight, Clock, MessageSquare } from 'lucide-react'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
+import HelpButton from '../components/ui/HelpButton'
+import { overviewHelp } from '../content/helpContent'
 
 export default function HomePage() {
   const [sessionCode, setSessionCode] = useState('')
@@ -40,9 +42,14 @@ export default function HomePage() {
             <Bot className="w-16 h-16 text-primary-600 dark:text-primary-400" />
           </div>
         </div>
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
-          FRC Season Plan Builder
-        </h1>
+        <div className="flex items-center justify-center gap-2">
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
+            FRC Season Plan Builder
+          </h1>
+          <HelpButton title={overviewHelp.title}>
+            {overviewHelp.content}
+          </HelpButton>
+        </div>
         <p className="text-lg text-gray-600 dark:text-gray-300 max-w-md mx-auto">
           Collaborate with your team to plan robot capabilities and match strategies for the upcoming season.
         </p>

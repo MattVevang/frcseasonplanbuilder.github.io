@@ -158,7 +158,7 @@ export default function StrategyForm({ strategy, sessionCode, onClose }: Strateg
         />
 
         <Input
-          label="Cycles per Match"
+          label="Cycles per Phase"
           id="cyclesPerMatch"
           type="number"
           min="1"

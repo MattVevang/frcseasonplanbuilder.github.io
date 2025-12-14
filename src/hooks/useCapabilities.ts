@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { useCapabilityStore } from '../stores/capabilityStore'
-import { CapabilityFormData } from '../types/capability'
+import { CapabilityFormData, SortField, PRIORITY_CONFIG } from '../types/capability'
 import { isFirebaseConfigured } from '../services/firebase'
 import * as capabilityService from '../services/capabilityService'
 import toast from 'react-hot-toast'
@@ -25,8 +25,9 @@ export function useCapabilities(sessionCode: string | null) {
         case 'rank':
           comparison = a.rank - b.rank
           break
-        case 'points':
-          comparison = a.points - b.points
+        case 'priority':
+          // Sort by priority weight (higher weight = higher priority)
+          comparison = PRIORITY_CONFIG[a.priority].weight - PRIORITY_CONFIG[b.priority].weight
           break
         case 'title':
           comparison = a.title.localeCompare(b.title)
@@ -121,7 +122,7 @@ export function useCapabilities(sessionCode: string | null) {
   }, [sessionCode, localClear])
 
   const handleSort = useCallback(
-    (field: 'rank' | 'points' | 'title') => {
+    (field: SortField) => {
       // Sorting is display-only - it doesn't change the actual priority ranks
       // Only drag-and-drop reordering changes ranks and syncs to Firebase
       localSortByField(field)

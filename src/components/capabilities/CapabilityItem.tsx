@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { GripVertical, Edit2, Trash2, ChevronUp, ChevronDown } from 'lucide-react'
-import { Capability } from '../../types/capability'
+import { Capability, Priority, PRIORITY_CONFIG } from '../../types/capability'
 import { useCapabilities } from '../../hooks/useCapabilities'
 import ConfirmDialog from '../ui/ConfirmDialog'
 import { cn } from '../../utils/cn'
@@ -11,6 +11,29 @@ interface CapabilityItemProps {
   capability: Capability
   sessionCode: string
   onEdit: (id: string) => void
+}
+
+const priorityColors: Record<Priority, { bg: string; text: string }> = {
+  'critical': {
+    bg: 'bg-red-100 dark:bg-red-900/30',
+    text: 'text-red-800 dark:text-red-300',
+  },
+  'high': {
+    bg: 'bg-orange-100 dark:bg-orange-900/30',
+    text: 'text-orange-800 dark:text-orange-300',
+  },
+  'medium': {
+    bg: 'bg-yellow-100 dark:bg-yellow-900/30',
+    text: 'text-yellow-800 dark:text-yellow-300',
+  },
+  'low': {
+    bg: 'bg-blue-100 dark:bg-blue-900/30',
+    text: 'text-blue-800 dark:text-blue-300',
+  },
+  'very-low': {
+    bg: 'bg-gray-100 dark:bg-gray-700',
+    text: 'text-gray-600 dark:text-gray-400',
+  },
 }
 
 export default function CapabilityItem({ capability, sessionCode, onEdit }: CapabilityItemProps) {
@@ -59,6 +82,9 @@ export default function CapabilityItem({ capability, sessionCode, onEdit }: Capa
   const currentIndex = capabilities.findIndex((c) => c.id === capability.id)
   const isFirst = currentIndex === 0
   const isLast = currentIndex === capabilities.length - 1
+
+  const priorityStyle = priorityColors[capability.priority]
+  const priorityLabel = PRIORITY_CONFIG[capability.priority].label
 
   return (
     <>
@@ -118,8 +144,14 @@ export default function CapabilityItem({ capability, sessionCode, onEdit }: Capa
               )}
             </div>
             <div className="flex-shrink-0 text-right">
-              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-sm font-semibold bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-                {capability.points} pts
+              <span
+                className={cn(
+                  'inline-flex items-center px-2.5 py-1 rounded-full text-sm font-semibold',
+                  priorityStyle.bg,
+                  priorityStyle.text
+                )}
+              >
+                {priorityLabel}
               </span>
             </div>
           </div>

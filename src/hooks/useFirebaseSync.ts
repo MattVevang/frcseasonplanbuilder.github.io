@@ -73,7 +73,7 @@ export function useFirebaseSync({ sessionCode }: UseFirebaseSyncOptions) {
               rank: data.rank,
               title: data.title,
               description: data.description,
-              points: data.points,
+              priority: data.priority || 'medium',
               createdAt: data.createdAt?.toDate() || new Date(),
               updatedAt: data.updatedAt?.toDate() || new Date(),
             }

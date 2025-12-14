@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 import { useStrategyStore } from '../stores/strategyStore'
 import { GamePlan, GamePlanFormData } from '../types/strategy'
 import { isFirebaseConfigured } from '../services/firebase'
+import { isDemoSession } from '../utils/demoUtils'
 import * as gamePlanService from '../services/gamePlanService'
 import toast from 'react-hot-toast'
 
@@ -19,7 +20,7 @@ export function useGamePlans(rawSessionCode: string | null) {
 
   const addGamePlan = useCallback(
     async (data: GamePlanFormData) => {
-      if (sessionCode && isFirebaseConfigured()) {
+      if (sessionCode && isFirebaseConfigured() && !isDemoSession(sessionCode)) {
         try {
           const gamePlan = await gamePlanService.addGamePlan(sessionCode, data)
           return gamePlan
@@ -40,7 +41,7 @@ export function useGamePlans(rawSessionCode: string | null) {
       // Optimistic update
       localUpdateGamePlan(id, data)
 
-      if (sessionCode && isFirebaseConfigured()) {
+      if (sessionCode && isFirebaseConfigured() && !isDemoSession(sessionCode)) {
         try {
           await gamePlanService.updateGamePlan(sessionCode, id, data)
         } catch (error) {
@@ -63,7 +64,7 @@ export function useGamePlans(rawSessionCode: string | null) {
       // Optimistic update
       localDeleteGamePlan(id)
 
-      if (sessionCode && isFirebaseConfigured()) {
+      if (sessionCode && isFirebaseConfigured() && !isDemoSession(sessionCode)) {
         try {
           await gamePlanService.deleteGamePlan(sessionCode, id)
         } catch (error) {
@@ -87,8 +88,8 @@ export function useGamePlans(rawSessionCode: string | null) {
       // Update local state immediately
       setGamePlans(plans)
 
-      // Sync to Firebase if configured
-      if (sessionCode && isFirebaseConfigured()) {
+      // Sync to Firebase if configured (skip for demo mode)
+      if (sessionCode && isFirebaseConfigured() && !isDemoSession(sessionCode)) {
         try {
           await gamePlanService.importGamePlans(sessionCode, plans)
         } catch (error) {
@@ -102,7 +103,7 @@ export function useGamePlans(rawSessionCode: string | null) {
 
   const duplicateGamePlan = useCallback(
     async (sourcePlanId: string, newName: string) => {
-      if (sessionCode && isFirebaseConfigured()) {
+      if (sessionCode && isFirebaseConfigured() && !isDemoSession(sessionCode)) {
         try {
           const newPlan = await gamePlanService.duplicateGamePlan(sessionCode, sourcePlanId, newName)
           // Firebase listeners will update the store automatically
@@ -113,7 +114,7 @@ export function useGamePlans(rawSessionCode: string | null) {
           return null
         }
       } else {
-        // Local-only duplication
+        // Local-only duplication (used in demo mode and offline)
         const sourcePlan = gamePlans.find((gp) => gp.id === sourcePlanId)
         if (!sourcePlan) return null
 

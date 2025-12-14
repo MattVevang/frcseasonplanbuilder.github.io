@@ -6,6 +6,7 @@ import { useCapabilityStore } from '../stores/capabilityStore'
 import { useStrategyStore } from '../stores/strategyStore'
 import { Capability } from '../types/capability'
 import { Strategy, GamePlan } from '../types/strategy'
+import { isDemoSession } from '../utils/demoUtils'
 import toast from 'react-hot-toast'
 
 interface UseFirebaseSyncOptions {
@@ -32,6 +33,12 @@ export function useFirebaseSync({ sessionCode: rawSessionCode }: UseFirebaseSync
   }, [])
 
   useEffect(() => {
+    // Skip Firebase entirely for demo mode
+    if (isDemoSession(sessionCode)) {
+      setIsLoading(false)
+      return
+    }
+
     if (!sessionCode || !isFirebaseConfigured()) {
       setIsLoading(false)
       return
@@ -166,5 +173,6 @@ export function useFirebaseSync({ sessionCode: rawSessionCode }: UseFirebaseSync
     loadRemoteData,
     isFirebaseEnabled: isFirebaseConfigured(),
     sessionNotFound,
+    isDemoMode: isDemoSession(sessionCode),
   }
 }

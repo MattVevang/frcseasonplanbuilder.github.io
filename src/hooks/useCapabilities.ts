@@ -2,6 +2,7 @@ import { useCallback, useMemo } from 'react'
 import { useCapabilityStore } from '../stores/capabilityStore'
 import { Capability, CapabilityFormData, SortField, PRIORITY_CONFIG } from '../types/capability'
 import { isFirebaseConfigured } from '../services/firebase'
+import { isDemoSession } from '../utils/demoUtils'
 import * as capabilityService from '../services/capabilityService'
 import toast from 'react-hot-toast'
 
@@ -42,7 +43,7 @@ export function useCapabilities(rawSessionCode: string | null) {
 
   const addCapability = useCallback(
     async (data: CapabilityFormData) => {
-      if (sessionCode && isFirebaseConfigured()) {
+      if (sessionCode && isFirebaseConfigured() && !isDemoSession(sessionCode)) {
         try {
           await capabilityService.addCapability(
             sessionCode,
@@ -66,7 +67,7 @@ export function useCapabilities(rawSessionCode: string | null) {
       // Optimistic update
       localUpdate(id, data)
 
-      if (sessionCode && isFirebaseConfigured()) {
+      if (sessionCode && isFirebaseConfigured() && !isDemoSession(sessionCode)) {
         try {
           await capabilityService.updateCapability(sessionCode, id, data)
         } catch (error) {
@@ -83,7 +84,7 @@ export function useCapabilities(rawSessionCode: string | null) {
       // Optimistic update
       localDelete(id)
 
-      if (sessionCode && isFirebaseConfigured()) {
+      if (sessionCode && isFirebaseConfigured() && !isDemoSession(sessionCode)) {
         try {
           await capabilityService.deleteCapability(sessionCode, id)
         } catch (error) {
@@ -100,7 +101,7 @@ export function useCapabilities(rawSessionCode: string | null) {
       // Optimistic update
       localReorder(activeId, overId)
 
-      if (sessionCode && isFirebaseConfigured()) {
+      if (sessionCode && isFirebaseConfigured() && !isDemoSession(sessionCode)) {
         try {
           const reordered = useCapabilityStore.getState().capabilities
           await capabilityService.reorderCapabilities(sessionCode, reordered)
@@ -115,7 +116,7 @@ export function useCapabilities(rawSessionCode: string | null) {
   const clearAll = useCallback(async () => {
     localClear()
 
-    if (sessionCode && isFirebaseConfigured()) {
+    if (sessionCode && isFirebaseConfigured() && !isDemoSession(sessionCode)) {
       try {
         await capabilityService.clearAllCapabilities(sessionCode)
       } catch (error) {
@@ -138,8 +139,8 @@ export function useCapabilities(rawSessionCode: string | null) {
       // Update local state immediately
       setCapabilities(caps)
 
-      // Sync to Firebase if configured
-      if (sessionCode && isFirebaseConfigured()) {
+      // Sync to Firebase if configured (skip for demo mode)
+      if (sessionCode && isFirebaseConfigured() && !isDemoSession(sessionCode)) {
         try {
           await capabilityService.importCapabilities(sessionCode, caps)
         } catch (error) {

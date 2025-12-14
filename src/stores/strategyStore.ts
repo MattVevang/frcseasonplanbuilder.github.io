@@ -227,15 +227,8 @@ export const useStrategyStore = create<StrategyState>()(
       },
 
       clearAll: () => {
-        const { selectedGamePlanId } = get()
-        // Only clear strategies for the selected game plan
-        if (selectedGamePlanId) {
-          set((state) => ({
-            strategies: state.strategies.filter(s => s.gamePlanId !== selectedGamePlanId)
-          }))
-        } else {
-          set({ strategies: [] })
-        }
+        // Clear ALL strategies across all game plans
+        set({ strategies: [] })
       },
 
       setStrategies: (strategies) => {

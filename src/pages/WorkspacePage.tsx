@@ -7,12 +7,12 @@ import HelpButton from '../components/ui/HelpButton'
 import { capabilitiesHelp, strategyHelp } from '../content/helpContent'
 import CapabilityList from '../components/capabilities/CapabilityList'
 import StrategyList from '../components/strategy/StrategyList'
-import ConfirmDialog from '../components/ui/ConfirmDialog'
+import ClearDataDialog from '../components/ui/ClearDataDialog'
 import { useCapabilities } from '../hooks/useCapabilities'
 import { useStrategies } from '../hooks/useStrategies'
 import { useGamePlans } from '../hooks/useGamePlans'
 import { useFirebaseSync } from '../hooks/useFirebaseSync'
-import { getSession } from '../services/sessionService'
+import { getSession, deleteSession } from '../services/sessionService'
 import { validatePin } from '../utils/pinUtils'
 import { isFirebaseConfigured } from '../services/firebase'
 import { exportData, importData } from '../utils/dataTransfer'
@@ -152,13 +152,32 @@ export default function WorkspacePage() {
     input.click()
   }
 
-  const handleClearAll = async () => {
-    if (activeTab === 'capabilities') {
+  const handleClearAll = async (options: {
+    clearCapabilities: boolean
+    clearStrategies: boolean
+    deleteSession: boolean
+  }) => {
+    if (options.deleteSession) {
+      await deleteSession(sessionCode)
+      toast.success('Session deleted')
+      navigate('/', { replace: true })
+      return
+    }
+
+    const cleared: string[] = []
+
+    if (options.clearCapabilities && capabilities.length > 0) {
       await clearCapabilities()
-      toast.success('All capabilities cleared')
-    } else {
+      cleared.push('capabilities')
+    }
+
+    if (options.clearStrategies && strategies.length > 0) {
       await clearStrategies()
-      toast.success('All strategies cleared')
+      cleared.push('strategies')
+    }
+
+    if (cleared.length > 0) {
+      toast.success(`Cleared ${cleared.join(' and ')}`)
     }
     setShowClearDialog(false)
   }
@@ -175,8 +194,6 @@ export default function WorkspacePage() {
       icon: <Target className="w-4 h-4" />,
     },
   ]
-
-  const currentCount = activeTab === 'capabilities' ? capabilities.length : strategies.length
 
   return (
     <div className="space-y-6">
@@ -241,11 +258,10 @@ export default function WorkspacePage() {
             variant="danger"
             size="sm"
             onClick={() => setShowClearDialog(true)}
-            disabled={currentCount === 0}
             className="flex items-center gap-2"
           >
             <Trash2 className="w-4 h-4" />
-            <span className="hidden sm:inline">Clear All</span>
+            <span className="hidden sm:inline">Clear Data</span>
           </Button>
         </div>
       </div>
@@ -256,14 +272,13 @@ export default function WorkspacePage() {
         <StrategyList sessionCode={sessionCode} />
       )}
 
-      <ConfirmDialog
+      <ClearDataDialog
         isOpen={showClearDialog}
         onClose={() => setShowClearDialog(false)}
         onConfirm={handleClearAll}
-        title={`Clear All ${activeTab === 'capabilities' ? 'Capabilities' : 'Strategies'}?`}
-        message={`This will permanently delete all ${currentCount} ${activeTab === 'capabilities' ? 'capabilities' : 'strategies'}. This action cannot be undone.`}
-        confirmText="Clear All"
-        variant="danger"
+        capabilityCount={capabilities.length}
+        strategyCount={strategies.length}
+        isFirebaseEnabled={isFirebaseEnabled}
       />
     </div>
   )

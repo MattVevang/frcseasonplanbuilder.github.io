@@ -2,6 +2,19 @@
 
 All notable changes to FRC Season Plan Builder.
 
+## [1.8.0] - 2024-12-14
+
+### Added
+- Option to delete entire session from Clear Data dialog
+
+### Changed
+- "Clear All" renamed to "Clear Data" with explicit checkboxes for capabilities, strategies, and session deletion
+- Checkboxes unchecked by default to prevent accidental data loss
+- Clear strategies now removes ALL strategies across all game plans
+
+### Fixed
+- "Clear All" button was misleading - now explicitly shows what will be cleared
+
 ## [1.7.0] - 2024-12-14
 
 ### Added

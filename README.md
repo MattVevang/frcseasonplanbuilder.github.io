@@ -28,6 +28,16 @@ A collaborative pre-season planning website for FRC/FTC robotics teams to track 
 - Clear all items with confirmation
 - Works offline with localStorage persistence
 
+## Screenshots
+
+![Main Screen](assets/img/1-MainScreen.png)
+
+![Robot Capabilities](assets/img/2-RobotCapabilities.png)
+
+![Match Strategy with Score and Time Budget](assets/img/3-MatchStrategyScoreAndTiming.png)
+
+![Shareable QR Code](assets/img/4-SharableQRCodeWithinSession.png)
+
 ## Getting Started
 
 ### Prerequisites

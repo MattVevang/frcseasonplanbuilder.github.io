@@ -1,7 +1,7 @@
 import { useEffect, useRef, useCallback, useState } from 'react'
 import { collection, onSnapshot, query, orderBy, doc } from 'firebase/firestore'
 import { getFirebaseDb, isFirebaseConfigured } from '../services/firebase'
-import { getOrCreateSession } from '../services/sessionService'
+import { getSessionAndRefresh } from '../services/sessionService'
 import { useCapabilityStore } from '../stores/capabilityStore'
 import { useStrategyStore } from '../stores/strategyStore'
 import { Capability } from '../types/capability'
@@ -19,6 +19,7 @@ export function useFirebaseSync({ sessionCode: rawSessionCode }: UseFirebaseSync
   const [isConnected, setIsConnected] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [hasRemoteUpdate, setHasRemoteUpdate] = useState(false)
+  const [sessionNotFound, setSessionNotFound] = useState(false)
   const lastVersionRef = useRef<number>(0)
   const isInitialLoadRef = useRef(true)
 
@@ -49,8 +50,13 @@ export function useFirebaseSync({ sessionCode: rawSessionCode }: UseFirebaseSync
 
     const setupListeners = async () => {
       try {
-        // Ensure session exists
-        await getOrCreateSession(sessionCode)
+        // Check if session exists (don't auto-create - that happens in HomePage with PIN)
+        const session = await getSessionAndRefresh(sessionCode)
+        if (!session) {
+          setSessionNotFound(true)
+          setIsLoading(false)
+          return
+        }
         setIsConnected(true)
 
         // Listen to session for version changes
@@ -159,5 +165,6 @@ export function useFirebaseSync({ sessionCode: rawSessionCode }: UseFirebaseSync
     hasRemoteUpdate,
     loadRemoteData,
     isFirebaseEnabled: isFirebaseConfigured(),
+    sessionNotFound,
   }
 }

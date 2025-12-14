@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import { ListChecks, Target, Download, Upload, Trash2, Wifi, WifiOff, Loader2, Clock } from 'lucide-react'
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
+import { ListChecks, Target, Download, Upload, Trash2, Wifi, WifiOff, Loader2, Clock, AlertTriangle } from 'lucide-react'
 import Button from '../components/ui/Button'
 import Tabs from '../components/ui/Tabs'
 import HelpButton from '../components/ui/HelpButton'
@@ -12,6 +12,9 @@ import { useCapabilities } from '../hooks/useCapabilities'
 import { useStrategies } from '../hooks/useStrategies'
 import { useGamePlans } from '../hooks/useGamePlans'
 import { useFirebaseSync } from '../hooks/useFirebaseSync'
+import { getSession } from '../services/sessionService'
+import { validatePin } from '../utils/pinUtils'
+import { isFirebaseConfigured } from '../services/firebase'
 import { exportData, importData } from '../utils/dataTransfer'
 import toast from 'react-hot-toast'
 
@@ -19,30 +22,105 @@ type TabType = 'capabilities' | 'strategy'
 
 export default function WorkspacePage() {
   const { sessionCode } = useParams<{ sessionCode: string }>()
+  const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<TabType>('capabilities')
   const [showClearDialog, setShowClearDialog] = useState(false)
+  const [pinValidated, setPinValidated] = useState(false)
+  const [pinError, setPinError] = useState<string | null>(null)
+
+  // Get PIN from URL
+  const pin = searchParams.get('pin')
 
   const { capabilities, clearAll: clearCapabilities, importCapabilities } = useCapabilities(sessionCode ?? null)
   const { strategies, clearAll: clearStrategies, importStrategies } = useStrategies(sessionCode ?? null)
   const { gamePlans, importGamePlans } = useGamePlans(sessionCode ?? null)
-  const { isConnected, isLoading, isFirebaseEnabled } = useFirebaseSync({ sessionCode: sessionCode ?? null })
+  const { isConnected, isLoading, isFirebaseEnabled, sessionNotFound } = useFirebaseSync({ sessionCode: sessionCode ?? null })
 
+  // Validate PIN on mount
   useEffect(() => {
     if (!sessionCode) {
       navigate('/')
+      return
     }
-  }, [sessionCode, navigate])
+
+    // Skip PIN validation if Firebase is not configured (local mode)
+    if (!isFirebaseConfigured()) {
+      setPinValidated(true)
+      return
+    }
+
+    const validateAccess = async () => {
+      try {
+        const session = await getSession(sessionCode.toLowerCase())
+
+        if (!session) {
+          // Session doesn't exist - redirect to HomePage to create it
+          navigate('/', { replace: true })
+          return
+        }
+
+        if (session.pinHash) {
+          // Session has PIN protection
+          if (!pin) {
+            // No PIN provided - redirect to HomePage
+            setPinError('This session requires a PIN')
+            return
+          }
+
+          const isValid = await validatePin(pin, session.pinHash)
+          if (!isValid) {
+            setPinError('Invalid PIN')
+            return
+          }
+        }
+
+        // PIN validated (or no PIN required)
+        setPinValidated(true)
+      } catch (err) {
+        console.error('PIN validation error:', err)
+        setPinError('Failed to validate access')
+      }
+    }
+
+    validateAccess()
+  }, [sessionCode, pin, navigate])
+
+  // Handle session not found from Firebase sync
+  useEffect(() => {
+    if (sessionNotFound && isFirebaseConfigured()) {
+      navigate('/', { replace: true })
+    }
+  }, [sessionNotFound, navigate])
 
   if (!sessionCode) {
     return null
   }
 
-  if (isLoading && isFirebaseEnabled) {
+  // Show PIN error state
+  if (pinError) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4">
+        <AlertTriangle className="w-12 h-12 text-amber-500" />
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{pinError}</h2>
+        <p className="text-gray-600 dark:text-gray-400">
+          Please go back and enter the correct PIN to access this session.
+        </p>
+        <Button onClick={() => navigate('/', { replace: true })}>
+          Back to Home
+        </Button>
+      </div>
+    )
+  }
+
+  // Show loading while validating PIN or loading data
+  if (!pinValidated || (isLoading && isFirebaseEnabled)) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4">
         <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
-        <p className="text-gray-600 dark:text-gray-400">Loading session data...</p>
+        <p className="text-gray-600 dark:text-gray-400">
+          {!pinValidated ? 'Validating access...' : 'Loading session data...'}
+        </p>
       </div>
     )
   }

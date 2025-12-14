@@ -23,6 +23,7 @@ export async function getSession(sessionCode: string): Promise<Session | null> {
   const data = snapshot.data()
   return {
     sessionCode: data.sessionCode,
+    pinHash: data.pinHash || null,  // null for legacy sessions without PIN
     createdAt: data.createdAt?.toDate() || new Date(),
     lastModifiedAt: data.lastModifiedAt?.toDate() || new Date(),
     expiresAt: data.expiresAt?.toDate() || new Date(),
@@ -30,7 +31,7 @@ export async function getSession(sessionCode: string): Promise<Session | null> {
   }
 }
 
-export async function createSession(sessionCode: string): Promise<Session> {
+export async function createSession(sessionCode: string, pinHash: string): Promise<Session> {
   const db = getFirebaseDb()
   if (!db) {
     throw new Error('Firebase not configured')
@@ -42,6 +43,7 @@ export async function createSession(sessionCode: string): Promise<Session> {
 
   const session: Session = {
     sessionCode,
+    pinHash,
     createdAt: now,
     lastModifiedAt: now,
     expiresAt,
@@ -51,6 +53,7 @@ export async function createSession(sessionCode: string): Promise<Session> {
   const sessionRef = doc(db, 'sessions', sessionCode)
   await setDoc(sessionRef, {
     sessionCode,
+    pinHash,
     createdAt: Timestamp.fromDate(now),
     lastModifiedAt: serverTimestamp(),
     expiresAt: Timestamp.fromDate(expiresAt),
@@ -60,14 +63,19 @@ export async function createSession(sessionCode: string): Promise<Session> {
   return session
 }
 
-export async function getOrCreateSession(sessionCode: string): Promise<Session> {
+/**
+ * Gets an existing session and refreshes its expiry.
+ * Returns null if session doesn't exist (caller should redirect to HomePage for creation).
+ * Note: createSession should be called from HomePage with a PIN.
+ */
+export async function getSessionAndRefresh(sessionCode: string): Promise<Session | null> {
   const existing = await getSession(sessionCode)
   if (existing) {
     // Refresh the expiry date on access
     await refreshSessionExpiry(sessionCode)
     return existing
   }
-  return createSession(sessionCode)
+  return null
 }
 
 export async function refreshSessionExpiry(sessionCode: string): Promise<void> {

@@ -42,12 +42,12 @@ export const overviewHelp: HelpSection = {
       </section>
 
       <section>
-        <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Session codes</h3>
+        <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Session codes & PINs</h3>
         <p className="text-gray-600 dark:text-gray-300">
-          Choose something unique that others won't guess—combining your team number with a memorable phrase works well (e.g., "1234-turbo-bots"). Anyone with your code can view and edit your session.
+          Choose something unique—combining your team number with a memorable phrase works well (e.g., "1234-turbo-bots"). New sessions require a 4-digit PIN that you'll share with teammates.
         </p>
         <p className="text-gray-600 dark:text-gray-300 mt-2">
-          <strong>Tip:</strong> Once in a session, click the QR code icon in the header to display a scannable code—perfect for quickly getting teammates connected on their phones.
+          <strong>Tip:</strong> Click the QR code icon in the header to display a scannable code that includes your PIN—teammates can scan it to join directly without typing anything.
         </p>
       </section>
 

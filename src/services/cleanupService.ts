@@ -53,6 +53,13 @@ export async function cleanupExpiredSessions(): Promise<number> {
         await deleteDoc(stratDoc.ref)
       }
 
+      // Delete gamePlans subcollection
+      const gamePlansRef = collection(db, 'sessions', sessionCode, 'gamePlans')
+      const gamePlanSnapshot = await getDocs(gamePlansRef)
+      for (const gamePlanDoc of gamePlanSnapshot.docs) {
+        await deleteDoc(gamePlanDoc.ref)
+      }
+
       // Delete the session document
       await deleteDoc(doc(db, 'sessions', sessionCode))
       deletedCount++

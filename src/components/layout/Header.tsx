@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Bot, Moon, Sun, ExternalLink, QrCode } from 'lucide-react'
 import { useThemeStore } from '../../stores/themeStore'
@@ -12,6 +12,12 @@ export default function Header() {
   // Extract session code from URL path (works outside Route tree)
   const sessionMatch = location.pathname.match(/^\/session\/(.+)$/)
   const sessionCode = sessionMatch ? sessionMatch[1] : null
+
+  // Extract PIN from URL query params
+  const pin = useMemo(() => {
+    const params = new URLSearchParams(location.search)
+    return params.get('pin')
+  }, [location.search])
 
   return (
     <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
@@ -28,6 +34,11 @@ export default function Header() {
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-primary-100 dark:bg-primary-900/30 rounded-lg">
                   <span className="text-sm font-medium text-primary-700 dark:text-primary-300">
                     Session: {sessionCode}
+                    {pin && (
+                      <span className="ml-2 text-primary-500 dark:text-primary-400">
+                        | PIN: {pin}
+                      </span>
+                    )}
                   </span>
                 </div>
                 <button
@@ -72,6 +83,7 @@ export default function Header() {
           isOpen={showQRCode}
           onClose={() => setShowQRCode(false)}
           sessionCode={sessionCode}
+          pin={pin}
         />
       )}
     </header>

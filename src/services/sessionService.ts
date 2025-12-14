@@ -3,6 +3,9 @@ import {
   getDoc,
   setDoc,
   updateDoc,
+  deleteDoc,
+  collection,
+  getDocs,
   Timestamp,
   serverTimestamp,
 } from 'firebase/firestore'
@@ -104,4 +107,37 @@ export async function incrementSessionVersion(sessionCode: string): Promise<void
     version: session.version + 1,
     lastModifiedAt: serverTimestamp(),
   })
+}
+
+/**
+ * Deletes a session and all its subcollections (capabilities, strategies, gamePlans).
+ * This is a permanent action that cannot be undone.
+ */
+export async function deleteSession(sessionCode: string): Promise<void> {
+  const db = getFirebaseDb()
+  if (!db) return
+
+  // Delete capabilities subcollection
+  const capabilitiesRef = collection(db, 'sessions', sessionCode, 'capabilities')
+  const capSnapshot = await getDocs(capabilitiesRef)
+  for (const capDoc of capSnapshot.docs) {
+    await deleteDoc(capDoc.ref)
+  }
+
+  // Delete strategies subcollection
+  const strategiesRef = collection(db, 'sessions', sessionCode, 'strategies')
+  const stratSnapshot = await getDocs(strategiesRef)
+  for (const stratDoc of stratSnapshot.docs) {
+    await deleteDoc(stratDoc.ref)
+  }
+
+  // Delete gamePlans subcollection
+  const gamePlansRef = collection(db, 'sessions', sessionCode, 'gamePlans')
+  const gamePlanSnapshot = await getDocs(gamePlansRef)
+  for (const gamePlanDoc of gamePlanSnapshot.docs) {
+    await deleteDoc(gamePlanDoc.ref)
+  }
+
+  // Delete the session document itself
+  await deleteDoc(doc(db, 'sessions', sessionCode))
 }

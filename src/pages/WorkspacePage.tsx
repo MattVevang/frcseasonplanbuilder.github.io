@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
-import { ListChecks, Target, Download, Upload, Trash2, Wifi, WifiOff, Loader2, Clock, AlertTriangle } from 'lucide-react'
+import { ListChecks, Target, Download, Upload, Trash2, Wifi, WifiOff, Loader2, Clock, AlertTriangle, Eye } from 'lucide-react'
 import Button from '../components/ui/Button'
 import Tabs from '../components/ui/Tabs'
 import HelpButton from '../components/ui/HelpButton'
@@ -12,9 +12,11 @@ import { useCapabilities } from '../hooks/useCapabilities'
 import { useStrategies } from '../hooks/useStrategies'
 import { useGamePlans } from '../hooks/useGamePlans'
 import { useFirebaseSync } from '../hooks/useFirebaseSync'
+import { useDemoData } from '../hooks/useDemoData'
 import { getSession, deleteSession } from '../services/sessionService'
 import { validatePin } from '../utils/pinUtils'
 import { isFirebaseConfigured } from '../services/firebase'
+import { isDemoSession } from '../utils/demoUtils'
 import { exportData, importData } from '../utils/dataTransfer'
 import toast from 'react-hot-toast'
 
@@ -35,12 +37,21 @@ export default function WorkspacePage() {
   const { capabilities, clearAll: clearCapabilities, importCapabilities } = useCapabilities(sessionCode ?? null)
   const { strategies, clearAll: clearStrategies, importStrategies } = useStrategies(sessionCode ?? null)
   const { gamePlans, importGamePlans } = useGamePlans(sessionCode ?? null)
-  const { isConnected, isLoading, isFirebaseEnabled, sessionNotFound } = useFirebaseSync({ sessionCode: sessionCode ?? null })
+  const { isConnected, isLoading, isFirebaseEnabled, sessionNotFound, isDemoMode } = useFirebaseSync({ sessionCode: sessionCode ?? null })
+
+  // Initialize demo data when in demo mode
+  useDemoData(sessionCode ?? null)
 
   // Validate PIN on mount
   useEffect(() => {
     if (!sessionCode) {
       navigate('/')
+      return
+    }
+
+    // Skip PIN validation for demo mode
+    if (isDemoSession(sessionCode)) {
+      setPinValidated(true)
       return
     }
 
@@ -200,7 +211,12 @@ export default function WorkspacePage() {
       {/* Connection status and data retention notice */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div className="flex items-center gap-2 text-sm">
-          {isFirebaseEnabled ? (
+          {isDemoMode ? (
+            <>
+              <Eye className="w-4 h-4 text-purple-500" />
+              <span className="text-purple-600 dark:text-purple-400">Demo Mode - Changes are temporary</span>
+            </>
+          ) : isFirebaseEnabled ? (
             isConnected ? (
               <>
                 <Wifi className="w-4 h-4 text-green-500" />
@@ -219,10 +235,12 @@ export default function WorkspacePage() {
             </>
           )}
         </div>
-        <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">
-          <Clock className="w-3.5 h-3.5" />
-          <span>Data expires after 30 days - Export to backup, Import to restore</span>
-        </div>
+        {!isDemoMode && (
+          <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">
+            <Clock className="w-3.5 h-3.5" />
+            <span>Data expires after 30 days - Export to backup, Import to restore</span>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -279,6 +297,7 @@ export default function WorkspacePage() {
         capabilityCount={capabilities.length}
         strategyCount={strategies.length}
         isFirebaseEnabled={isFirebaseEnabled}
+        isDemoMode={isDemoMode}
       />
     </div>
   )

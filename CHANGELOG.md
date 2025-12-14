@@ -2,6 +2,19 @@
 
 All notable changes to FRC Season Plan Builder.
 
+## [1.9.0] - 2024-12-14
+
+### Added
+
+- Demo Mode - "Try Demo" button on homepage lets visitors explore the tool with pre-populated 2025 Reefscape example data
+- Demo includes 10 robot capabilities and 2 game plans with strategies
+- Demo changes are temporary and isolated per user (no Firebase sync)
+
+### Changed
+
+- Demo mode shows purple "Demo Mode - Changes are temporary" banner
+- Data retention notice hidden in demo mode
+
 ## [1.8.0] - 2024-12-14
 
 ### Added

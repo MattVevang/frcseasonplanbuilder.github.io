@@ -13,6 +13,7 @@ interface ClearDataDialogProps {
   capabilityCount: number
   strategyCount: number
   isFirebaseEnabled: boolean
+  isDemoMode?: boolean
 }
 
 export default function ClearDataDialog({
@@ -22,6 +23,7 @@ export default function ClearDataDialog({
   capabilityCount,
   strategyCount,
   isFirebaseEnabled,
+  isDemoMode = false,
 }: ClearDataDialogProps) {
   const [clearCapabilities, setClearCapabilities] = useState(false)
   const [clearStrategies, setClearStrategies] = useState(false)
@@ -108,7 +110,7 @@ export default function ClearDataDialog({
             </span>
           </label>
 
-          {isFirebaseEnabled && (
+          {isFirebaseEnabled && !isDemoMode && (
             <>
               <div className="border-t border-gray-200 dark:border-gray-700 my-3" />
               <label className="flex items-start gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer">

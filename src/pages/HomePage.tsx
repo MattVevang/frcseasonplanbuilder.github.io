@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Bot, Users, ListChecks, Target, ArrowRight, Clock, MessageSquare, Loader2, Lock } from 'lucide-react'
+import { Bot, Users, ListChecks, Target, ArrowRight, Clock, MessageSquare, Loader2, Lock, Eye } from 'lucide-react'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import HelpButton from '../components/ui/HelpButton'
@@ -265,6 +265,23 @@ export default function HomePage() {
           <p className="mt-4 text-xs text-center text-gray-500 dark:text-gray-400">
             Pick something unique to your team. New sessions require a 4-digit PIN for protection.
           </p>
+        )}
+
+        {/* Try Demo button */}
+        {step === 'code' && (
+          <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <Button
+              variant="secondary"
+              onClick={() => navigate('/session/demo')}
+              className="w-full flex items-center justify-center gap-2"
+            >
+              <Eye className="w-4 h-4" />
+              Try Demo
+            </Button>
+            <p className="mt-2 text-xs text-center text-gray-500 dark:text-gray-400">
+              See example 2025 Reefscape data - no account needed
+            </p>
+          </div>
         )}
       </div>
 

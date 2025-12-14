@@ -2,6 +2,7 @@ import { useCallback, useMemo } from 'react'
 import { useStrategyStore } from '../stores/strategyStore'
 import { Strategy, StrategyFormData, StrategySortField, MatchPhase } from '../types/strategy'
 import { isFirebaseConfigured } from '../services/firebase'
+import { isDemoSession } from '../utils/demoUtils'
 import * as strategyService from '../services/strategyService'
 import toast from 'react-hot-toast'
 
@@ -60,7 +61,7 @@ export function useStrategies(rawSessionCode: string | null) {
       const gamePlanId = selectedGamePlanId || 'default'
       const strategiesInPlan = rawStrategies.filter((s) => s.gamePlanId === gamePlanId)
 
-      if (sessionCode && isFirebaseConfigured()) {
+      if (sessionCode && isFirebaseConfigured() && !isDemoSession(sessionCode)) {
         try {
           await strategyService.addStrategy(
             sessionCode,
@@ -85,7 +86,7 @@ export function useStrategies(rawSessionCode: string | null) {
       // Optimistic update
       localUpdate(id, data)
 
-      if (sessionCode && isFirebaseConfigured()) {
+      if (sessionCode && isFirebaseConfigured() && !isDemoSession(sessionCode)) {
         try {
           await strategyService.updateStrategy(sessionCode, id, data)
         } catch (error) {
@@ -102,7 +103,7 @@ export function useStrategies(rawSessionCode: string | null) {
       // Optimistic update
       localDelete(id)
 
-      if (sessionCode && isFirebaseConfigured()) {
+      if (sessionCode && isFirebaseConfigured() && !isDemoSession(sessionCode)) {
         try {
           await strategyService.deleteStrategy(sessionCode, id)
         } catch (error) {
@@ -119,7 +120,7 @@ export function useStrategies(rawSessionCode: string | null) {
       // Optimistic update
       localReorder(activeId, overId)
 
-      if (sessionCode && isFirebaseConfigured()) {
+      if (sessionCode && isFirebaseConfigured() && !isDemoSession(sessionCode)) {
         try {
           // Get strategies for the current game plan only
           const reordered = useStrategyStore.getState().strategies.filter(
@@ -137,7 +138,7 @@ export function useStrategies(rawSessionCode: string | null) {
   const clearAll = useCallback(async () => {
     localClear()
 
-    if (sessionCode && isFirebaseConfigured()) {
+    if (sessionCode && isFirebaseConfigured() && !isDemoSession(sessionCode)) {
       try {
         await strategyService.clearAllStrategies(sessionCode)
       } catch (error) {
@@ -160,8 +161,8 @@ export function useStrategies(rawSessionCode: string | null) {
       // Update local state immediately
       setStrategies(strats)
 
-      // Sync to Firebase if configured
-      if (sessionCode && isFirebaseConfigured()) {
+      // Sync to Firebase if configured (skip for demo mode)
+      if (sessionCode && isFirebaseConfigured() && !isDemoSession(sessionCode)) {
         try {
           await strategyService.importStrategies(sessionCode, strats)
         } catch (error) {

@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { useCapabilityStore } from '../stores/capabilityStore'
-import { CapabilityFormData, SortField, PRIORITY_CONFIG } from '../types/capability'
+import { Capability, CapabilityFormData, SortField, PRIORITY_CONFIG } from '../types/capability'
 import { isFirebaseConfigured } from '../services/firebase'
 import * as capabilityService from '../services/capabilityService'
 import toast from 'react-hot-toast'
@@ -130,6 +130,24 @@ export function useCapabilities(sessionCode: string | null) {
     [localSortByField]
   )
 
+  const importCapabilities = useCallback(
+    async (caps: Capability[]) => {
+      // Update local state immediately
+      setCapabilities(caps)
+
+      // Sync to Firebase if configured
+      if (sessionCode && isFirebaseConfigured()) {
+        try {
+          await capabilityService.importCapabilities(sessionCode, caps)
+        } catch (error) {
+          console.error('Failed to import capabilities to Firebase:', error)
+          toast.error('Failed to sync imported data to server.')
+        }
+      }
+    },
+    [sessionCode, setCapabilities]
+  )
+
   return {
     capabilities,
     addCapability,
@@ -139,5 +157,6 @@ export function useCapabilities(sessionCode: string | null) {
     clearAll,
     sortByField: handleSort,
     setCapabilities,
+    importCapabilities,
   }
 }

@@ -8,6 +8,7 @@ import {
   Timestamp,
   query,
   orderBy,
+  writeBatch,
 } from 'firebase/firestore'
 import { getFirebaseDb } from './firebase'
 import { GamePlan, GamePlanFormData } from '../types/strategy'
@@ -112,4 +113,49 @@ export async function ensureDefaultGamePlan(sessionCode: string): Promise<GamePl
     name: 'Default Plan',
     description: 'Your primary game strategy',
   })
+}
+
+export async function clearAllGamePlans(sessionCode: string): Promise<void> {
+  const db = getFirebaseDb()
+  if (!db) return
+
+  const colRef = getGamePlansCollection(sessionCode)
+  if (!colRef) return
+
+  const snapshot = await getDocs(colRef)
+  const batch = writeBatch(db)
+
+  snapshot.docs.forEach((docSnap) => {
+    batch.delete(docSnap.ref)
+  })
+
+  await batch.commit()
+  await incrementSessionVersion(sessionCode)
+}
+
+export async function importGamePlans(
+  sessionCode: string,
+  gamePlans: GamePlan[]
+): Promise<void> {
+  const db = getFirebaseDb()
+  if (!db) return
+
+  // Clear existing game plans first
+  await clearAllGamePlans(sessionCode)
+
+  // Batch write all imported game plans
+  const batch = writeBatch(db)
+
+  gamePlans.forEach((gp) => {
+    const docRef = doc(db, 'sessions', sessionCode, 'gamePlans', gp.id)
+    batch.set(docRef, {
+      name: gp.name,
+      description: gp.description || null,
+      createdAt: Timestamp.fromDate(gp.createdAt instanceof Date ? gp.createdAt : new Date(gp.createdAt)),
+      updatedAt: Timestamp.fromDate(new Date()),
+    })
+  })
+
+  await batch.commit()
+  await incrementSessionVersion(sessionCode)
 }

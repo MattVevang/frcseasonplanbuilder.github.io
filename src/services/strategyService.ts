@@ -154,3 +154,38 @@ export async function clearAllStrategies(sessionCode: string): Promise<void> {
   await batch.commit()
   await incrementSessionVersion(sessionCode)
 }
+
+export async function importStrategies(
+  sessionCode: string,
+  strategies: Strategy[]
+): Promise<void> {
+  const db = getFirebaseDb()
+  if (!db) return
+
+  // Clear existing strategies first
+  await clearAllStrategies(sessionCode)
+
+  // Batch write all imported strategies
+  const batch = writeBatch(db)
+
+  strategies.forEach((strat) => {
+    const docRef = doc(db, 'sessions', sessionCode, 'strategies', strat.id)
+    batch.set(docRef, {
+      gamePlanId: strat.gamePlanId,
+      rank: strat.rank,
+      phase: strat.phase,
+      title: strat.title,
+      description: strat.description,
+      expectedPoints: strat.expectedPoints,
+      cycleTime: strat.cycleTime || null,
+      cyclesPerMatch: strat.cyclesPerMatch || null,
+      isDefensive: strat.isDefensive,
+      notes: strat.notes,
+      createdAt: Timestamp.fromDate(strat.createdAt instanceof Date ? strat.createdAt : new Date(strat.createdAt)),
+      updatedAt: Timestamp.fromDate(new Date()),
+    })
+  })
+
+  await batch.commit()
+  await incrementSessionVersion(sessionCode)
+}

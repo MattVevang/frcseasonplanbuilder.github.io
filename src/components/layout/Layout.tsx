@@ -1,6 +1,8 @@
 import { ReactNode } from 'react'
 import Header from './Header'
 
+const APP_VERSION = '1.1.0'
+
 interface LayoutProps {
   children: ReactNode
 }
@@ -14,6 +16,7 @@ export default function Layout({ children }: LayoutProps) {
       </main>
       <footer className="py-4 text-center text-sm text-gray-500 dark:text-gray-400">
         <p>FRC Season Plan Builder - Built for FIRST Robotics Teams</p>
+        <p className="text-xs mt-1">v{APP_VERSION}</p>
       </footer>
     </div>
   )

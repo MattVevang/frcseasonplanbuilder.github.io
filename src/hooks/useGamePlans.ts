@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { useStrategyStore } from '../stores/strategyStore'
-import { GamePlanFormData } from '../types/strategy'
+import { GamePlan, GamePlanFormData } from '../types/strategy'
 import { isFirebaseConfigured } from '../services/firebase'
 import * as gamePlanService from '../services/gamePlanService'
 import toast from 'react-hot-toast'
@@ -79,6 +79,24 @@ export function useGamePlans(sessionCode: string | null) {
     }
   }, [gamePlans.length, addGamePlan])
 
+  const importGamePlans = useCallback(
+    async (plans: GamePlan[]) => {
+      // Update local state immediately
+      setGamePlans(plans)
+
+      // Sync to Firebase if configured
+      if (sessionCode && isFirebaseConfigured()) {
+        try {
+          await gamePlanService.importGamePlans(sessionCode, plans)
+        } catch (error) {
+          console.error('Failed to import game plans to Firebase:', error)
+          toast.error('Failed to sync imported data to server.')
+        }
+      }
+    },
+    [sessionCode, setGamePlans]
+  )
+
   const selectedGamePlan = gamePlans.find((gp) => gp.id === selectedGamePlanId) || gamePlans[0] || null
 
   return {
@@ -90,6 +108,7 @@ export function useGamePlans(sessionCode: string | null) {
     deleteGamePlan,
     selectGamePlan,
     setGamePlans,
+    importGamePlans,
     ensureDefaultGamePlan,
   }
 }

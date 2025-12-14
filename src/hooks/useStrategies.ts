@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { useStrategyStore } from '../stores/strategyStore'
-import { StrategyFormData, StrategySortField, MatchPhase } from '../types/strategy'
+import { Strategy, StrategyFormData, StrategySortField, MatchPhase } from '../types/strategy'
 import { isFirebaseConfigured } from '../services/firebase'
 import * as strategyService from '../services/strategyService'
 import toast from 'react-hot-toast'
@@ -152,6 +152,24 @@ export function useStrategies(sessionCode: string | null) {
     [localSortByField]
   )
 
+  const importStrategies = useCallback(
+    async (strats: Strategy[]) => {
+      // Update local state immediately
+      setStrategies(strats)
+
+      // Sync to Firebase if configured
+      if (sessionCode && isFirebaseConfigured()) {
+        try {
+          await strategyService.importStrategies(sessionCode, strats)
+        } catch (error) {
+          console.error('Failed to import strategies to Firebase:', error)
+          toast.error('Failed to sync imported data to server.')
+        }
+      }
+    },
+    [sessionCode, setStrategies]
+  )
+
   return {
     strategies,
     addStrategy,
@@ -161,6 +179,7 @@ export function useStrategies(sessionCode: string | null) {
     clearAll,
     sortByField: handleSort,
     setStrategies,
+    importStrategies,
     getProjectedScore,
   }
 }

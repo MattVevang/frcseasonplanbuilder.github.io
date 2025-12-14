@@ -23,9 +23,9 @@ export default function WorkspacePage() {
   const [activeTab, setActiveTab] = useState<TabType>('capabilities')
   const [showClearDialog, setShowClearDialog] = useState(false)
 
-  const { capabilities, clearAll: clearCapabilities, setCapabilities } = useCapabilities(sessionCode ?? null)
-  const { strategies, clearAll: clearStrategies, setStrategies } = useStrategies(sessionCode ?? null)
-  const { gamePlans, setGamePlans } = useGamePlans(sessionCode ?? null)
+  const { capabilities, clearAll: clearCapabilities, importCapabilities } = useCapabilities(sessionCode ?? null)
+  const { strategies, clearAll: clearStrategies, importStrategies } = useStrategies(sessionCode ?? null)
+  const { gamePlans, importGamePlans } = useGamePlans(sessionCode ?? null)
   const { isConnected, isLoading, isFirebaseEnabled } = useFirebaseSync({ sessionCode: sessionCode ?? null })
 
   useEffect(() => {
@@ -62,9 +62,10 @@ export default function WorkspacePage() {
 
       try {
         const result = await importData(file)
-        setCapabilities(result.capabilities)
-        setGamePlans(result.gamePlans)
-        setStrategies(result.strategies)
+        // Import to Firebase (these functions sync to server if configured)
+        await importCapabilities(result.capabilities)
+        await importGamePlans(result.gamePlans)
+        await importStrategies(result.strategies)
         toast.success(`Imported ${result.capabilities.length} capabilities, ${result.gamePlans.length} game plans, and ${result.strategies.length} strategies`)
       } catch (err) {
         toast.error(err instanceof Error ? err.message : 'Failed to import data')

@@ -140,3 +140,32 @@ export async function clearAllCapabilities(sessionCode: string): Promise<void> {
   await batch.commit()
   await incrementSessionVersion(sessionCode)
 }
+
+export async function importCapabilities(
+  sessionCode: string,
+  capabilities: Capability[]
+): Promise<void> {
+  const db = getFirebaseDb()
+  if (!db) return
+
+  // Clear existing capabilities first
+  await clearAllCapabilities(sessionCode)
+
+  // Batch write all imported capabilities
+  const batch = writeBatch(db)
+
+  capabilities.forEach((cap, index) => {
+    const docRef = doc(db, 'sessions', sessionCode, 'capabilities', cap.id)
+    batch.set(docRef, {
+      rank: index + 1,
+      title: cap.title,
+      description: cap.description,
+      priority: cap.priority,
+      createdAt: Timestamp.fromDate(cap.createdAt instanceof Date ? cap.createdAt : new Date(cap.createdAt)),
+      updatedAt: Timestamp.fromDate(new Date()),
+    })
+  })
+
+  await batch.commit()
+  await incrementSessionVersion(sessionCode)
+}

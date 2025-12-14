@@ -1,4 +1,5 @@
 import { ReactNode } from 'react'
+import { MATCH_PHASES, formatDuration } from '../config/matchTiming'
 
 interface HelpSection {
   title: string
@@ -124,9 +125,9 @@ export const strategyHelp: HelpSection = {
       <section>
         <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Match phases</h3>
         <ul className="space-y-1 text-gray-600 dark:text-gray-300">
-          <li><span className="font-medium text-green-600 dark:text-green-400">Autonomous (15s)</span> — Robot operates independently at match start</li>
-          <li><span className="font-medium text-blue-600 dark:text-blue-400">Teleop (2:15)</span> — Driver-controlled period</li>
-          <li><span className="font-medium text-purple-600 dark:text-purple-400">Endgame (20s)</span> — Final moments, often for climbing/parking</li>
+          <li><span className="font-medium text-green-600 dark:text-green-400">{MATCH_PHASES.auto.label} ({formatDuration(MATCH_PHASES.auto.duration)})</span> — Robot operates independently at match start</li>
+          <li><span className="font-medium text-blue-600 dark:text-blue-400">{MATCH_PHASES.teleop.label} ({formatDuration(MATCH_PHASES.teleop.duration)})</span> — Driver-controlled period</li>
+          <li><span className="font-medium text-purple-600 dark:text-purple-400">{MATCH_PHASES.endgame.label} ({formatDuration(MATCH_PHASES.endgame.duration)})</span> — Final moments, often for climbing/parking</li>
         </ul>
       </section>
 

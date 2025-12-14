@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useStrategies } from '../../hooks/useStrategies'
 import { Strategy, MatchPhase } from '../../types/strategy'
+import { PHASE_OPTIONS } from '../../config/matchTiming'
 import Button from '../ui/Button'
 import Input from '../ui/Input'
 import Textarea from '../ui/Textarea'
@@ -95,11 +96,6 @@ export default function StrategyForm({ strategy, sessionCode, onClose }: Strateg
     onClose()
   }
 
-  const phaseOptions = [
-    { value: 'auto', label: 'Autonomous (15s)' },
-    { value: 'teleop', label: 'Teleop (2:15)' },
-    { value: 'endgame', label: 'Endgame (20s)' },
-  ]
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -109,7 +105,7 @@ export default function StrategyForm({ strategy, sessionCode, onClose }: Strateg
           id="phase"
           value={phase}
           onChange={(e) => setPhase(e.target.value as MatchPhase)}
-          options={phaseOptions}
+          options={PHASE_OPTIONS}
         />
 
         <Input

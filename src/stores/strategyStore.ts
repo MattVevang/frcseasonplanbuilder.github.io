@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware'
 import { v4 as uuidv4 } from 'uuid'
 import { Strategy, StrategyFormData, StrategySortField, MatchPhase, GamePlan, GamePlanFormData } from '../types/strategy'
 import { SortDirection } from '../types/capability'
+import { MATCH_PHASES, TOTAL_MATCH_TIME } from '../config/matchTiming'
 
 interface StrategyState {
   strategies: Strategy[]
@@ -278,13 +279,6 @@ export const useStrategyStore = create<StrategyState>()(
         const { strategies, selectedGamePlanId } = get()
         const targetGamePlanId = gamePlanId || selectedGamePlanId
 
-        // FRC match phase durations in seconds
-        const PHASE_DURATIONS = {
-          auto: 15,
-          teleop: 135, // 2:15
-          endgame: 20, // Last 20s of teleop, but tracked separately for planning
-        }
-
         const filtered = targetGamePlanId
           ? strategies.filter((s) => s.gamePlanId === targetGamePlanId)
           : strategies
@@ -314,12 +308,12 @@ export const useStrategyStore = create<StrategyState>()(
         }
 
         return {
-          auto: { used: autoTime, available: PHASE_DURATIONS.auto },
-          teleop: { used: teleopTime, available: PHASE_DURATIONS.teleop },
-          endgame: { used: endgameTime, available: PHASE_DURATIONS.endgame },
+          auto: { used: autoTime, available: MATCH_PHASES.auto.duration },
+          teleop: { used: teleopTime, available: MATCH_PHASES.teleop.duration },
+          endgame: { used: endgameTime, available: MATCH_PHASES.endgame.duration },
           total: {
             used: autoTime + teleopTime + endgameTime,
-            available: PHASE_DURATIONS.auto + PHASE_DURATIONS.teleop,
+            available: TOTAL_MATCH_TIME,
           },
         }
       },

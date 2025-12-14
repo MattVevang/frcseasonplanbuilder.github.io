@@ -5,7 +5,7 @@ import { getOrCreateSession } from '../services/sessionService'
 import { useCapabilityStore } from '../stores/capabilityStore'
 import { useStrategyStore } from '../stores/strategyStore'
 import { Capability } from '../types/capability'
-import { Strategy } from '../types/strategy'
+import { Strategy, GamePlan } from '../types/strategy'
 import toast from 'react-hot-toast'
 
 interface UseFirebaseSyncOptions {
@@ -21,6 +21,7 @@ export function useFirebaseSync({ sessionCode }: UseFirebaseSyncOptions) {
 
   const setCapabilities = useCapabilityStore((s) => s.setCapabilities)
   const setStrategies = useStrategyStore((s) => s.setStrategies)
+  const setGamePlans = useStrategyStore((s) => s.setGamePlans)
 
   const loadRemoteData = useCallback(() => {
     setHasRemoteUpdate(false)
@@ -41,6 +42,7 @@ export function useFirebaseSync({ sessionCode }: UseFirebaseSyncOptions) {
     let unsubSession: (() => void) | null = null
     let unsubCapabilities: (() => void) | null = null
     let unsubStrategies: (() => void) | null = null
+    let unsubGamePlans: (() => void) | null = null
 
     const setupListeners = async () => {
       try {
@@ -85,6 +87,25 @@ export function useFirebaseSync({ sessionCode }: UseFirebaseSyncOptions) {
           }
         })
 
+        // Listen to game plans
+        const gamePlansQuery = query(
+          collection(db, 'sessions', sessionCode, 'gamePlans'),
+          orderBy('createdAt', 'asc')
+        )
+        unsubGamePlans = onSnapshot(gamePlansQuery, (snapshot) => {
+          const gamePlans: GamePlan[] = snapshot.docs.map((doc) => {
+            const data = doc.data()
+            return {
+              id: doc.id,
+              name: data.name,
+              description: data.description,
+              createdAt: data.createdAt?.toDate() || new Date(),
+              updatedAt: data.updatedAt?.toDate() || new Date(),
+            }
+          })
+          setGamePlans(gamePlans)
+        })
+
         // Listen to strategies
         const stratQuery = query(
           collection(db, 'sessions', sessionCode, 'strategies'),
@@ -95,6 +116,7 @@ export function useFirebaseSync({ sessionCode }: UseFirebaseSyncOptions) {
             const data = doc.data()
             return {
               id: doc.id,
+              gamePlanId: data.gamePlanId || 'default',
               rank: data.rank,
               phase: data.phase,
               title: data.title,
@@ -124,8 +146,9 @@ export function useFirebaseSync({ sessionCode }: UseFirebaseSyncOptions) {
       unsubSession?.()
       unsubCapabilities?.()
       unsubStrategies?.()
+      unsubGamePlans?.()
     }
-  }, [sessionCode, setCapabilities, setStrategies])
+  }, [sessionCode, setCapabilities, setStrategies, setGamePlans])
 
   return {
     isConnected,

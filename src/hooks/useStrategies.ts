@@ -9,6 +9,7 @@ export function useStrategies(sessionCode: string | null) {
   const rawStrategies = useStrategyStore((s) => s.strategies)
   const sortField = useStrategyStore((s) => s.sortField)
   const sortDirection = useStrategyStore((s) => s.sortDirection)
+  const selectedGamePlanId = useStrategyStore((s) => s.selectedGamePlanId)
   const localAdd = useStrategyStore((s) => s.addStrategy)
   const localUpdate = useStrategyStore((s) => s.updateStrategy)
   const localDelete = useStrategyStore((s) => s.deleteStrategy)
@@ -18,7 +19,7 @@ export function useStrategies(sessionCode: string | null) {
   const localSortByField = useStrategyStore((s) => s.sortByField)
   const getProjectedScore = useStrategyStore((s) => s.getProjectedScore)
 
-  // Compute sorted strategies - useMemo ensures re-render when dependencies change
+  // Filter by selected game plan and compute sorted strategies
   const strategies = useMemo(() => {
     const phaseOrder: Record<MatchPhase, number> = {
       auto: 1,
@@ -26,7 +27,12 @@ export function useStrategies(sessionCode: string | null) {
       endgame: 3,
     }
 
-    return [...rawStrategies].sort((a, b) => {
+    // Filter by selected game plan
+    const filtered = selectedGamePlanId
+      ? rawStrategies.filter((s) => s.gamePlanId === selectedGamePlanId)
+      : rawStrategies
+
+    return [...filtered].sort((a, b) => {
       let comparison = 0
       switch (sortField) {
         case 'rank':
@@ -44,27 +50,31 @@ export function useStrategies(sessionCode: string | null) {
       }
       return sortDirection === 'asc' ? comparison : -comparison
     })
-  }, [rawStrategies, sortField, sortDirection])
+  }, [rawStrategies, sortField, sortDirection, selectedGamePlanId])
 
   const addStrategy = useCallback(
     async (data: StrategyFormData) => {
+      const gamePlanId = selectedGamePlanId || 'default'
+      const strategiesInPlan = rawStrategies.filter((s) => s.gamePlanId === gamePlanId)
+
       if (sessionCode && isFirebaseConfigured()) {
         try {
           await strategyService.addStrategy(
             sessionCode,
             data,
-            rawStrategies.length + 1
+            strategiesInPlan.length + 1,
+            gamePlanId
           )
         } catch (error) {
           console.error('Failed to add strategy to Firebase:', error)
           toast.error('Failed to save. Working offline.')
-          localAdd(data)
+          localAdd(data, gamePlanId)
         }
       } else {
-        localAdd(data)
+        localAdd(data, gamePlanId)
       }
     },
-    [sessionCode, rawStrategies.length, localAdd]
+    [sessionCode, rawStrategies, selectedGamePlanId, localAdd]
   )
 
   const updateStrategy = useCallback(
@@ -108,14 +118,17 @@ export function useStrategies(sessionCode: string | null) {
 
       if (sessionCode && isFirebaseConfigured()) {
         try {
-          const reordered = useStrategyStore.getState().strategies
+          // Get strategies for the current game plan only
+          const reordered = useStrategyStore.getState().strategies.filter(
+            (s) => s.gamePlanId === selectedGamePlanId
+          )
           await strategyService.reorderStrategies(sessionCode, reordered)
         } catch (error) {
           console.error('Failed to reorder strategies in Firebase:', error)
         }
       }
     },
-    [sessionCode, localReorder]
+    [sessionCode, localReorder, selectedGamePlanId]
   )
 
   const clearAll = useCallback(async () => {

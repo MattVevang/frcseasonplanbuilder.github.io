@@ -9,6 +9,14 @@ import './index.css'
 // This will be '/' for custom domains or organization sites
 const basename = import.meta.env.BASE_URL
 
+// Handle SPA redirect from 404.html (GitHub Pages)
+const spaRedirect = sessionStorage.getItem('spa-redirect')
+if (spaRedirect) {
+  sessionStorage.removeItem('spa-redirect')
+  // Use replaceState to update URL without adding to history
+  window.history.replaceState(null, '', spaRedirect)
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter basename={basename}>

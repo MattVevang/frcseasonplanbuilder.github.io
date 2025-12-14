@@ -32,6 +32,7 @@ export async function getStrategies(sessionCode: string): Promise<Strategy[]> {
     const data = doc.data()
     return {
       id: doc.id,
+      gamePlanId: data.gamePlanId || 'default',
       rank: data.rank,
       phase: data.phase,
       title: data.title,
@@ -50,7 +51,8 @@ export async function getStrategies(sessionCode: string): Promise<Strategy[]> {
 export async function addStrategy(
   sessionCode: string,
   data: StrategyFormData,
-  rank: number
+  rank: number,
+  gamePlanId: string
 ): Promise<Strategy> {
   const db = getFirebaseDb()
   if (!db) throw new Error('Firebase not configured')
@@ -60,6 +62,7 @@ export async function addStrategy(
 
   const strategy: Strategy = {
     id,
+    gamePlanId,
     rank,
     ...data,
     createdAt: now,
@@ -68,6 +71,7 @@ export async function addStrategy(
 
   const docRef = doc(db, 'sessions', sessionCode, 'strategies', id)
   await setDoc(docRef, {
+    gamePlanId,
     rank,
     phase: data.phase,
     title: data.title,

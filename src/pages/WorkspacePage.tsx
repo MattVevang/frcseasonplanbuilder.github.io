@@ -3,11 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { ListChecks, Target, Download, Upload, Trash2, Wifi, WifiOff, Loader2, Clock } from 'lucide-react'
 import Button from '../components/ui/Button'
 import Tabs from '../components/ui/Tabs'
+import HelpButton from '../components/ui/HelpButton'
+import { capabilitiesHelp, strategyHelp } from '../content/helpContent'
 import CapabilityList from '../components/capabilities/CapabilityList'
 import StrategyList from '../components/strategy/StrategyList'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
 import { useCapabilities } from '../hooks/useCapabilities'
 import { useStrategies } from '../hooks/useStrategies'
+import { useGamePlans } from '../hooks/useGamePlans'
 import { useFirebaseSync } from '../hooks/useFirebaseSync'
 import { exportData, importData } from '../utils/dataTransfer'
 import toast from 'react-hot-toast'
@@ -22,6 +25,7 @@ export default function WorkspacePage() {
 
   const { capabilities, clearAll: clearCapabilities, setCapabilities } = useCapabilities(sessionCode ?? null)
   const { strategies, clearAll: clearStrategies, setStrategies } = useStrategies(sessionCode ?? null)
+  const { gamePlans, setGamePlans } = useGamePlans(sessionCode ?? null)
   const { isConnected, isLoading, isFirebaseEnabled } = useFirebaseSync({ sessionCode: sessionCode ?? null })
 
   useEffect(() => {
@@ -44,7 +48,7 @@ export default function WorkspacePage() {
   }
 
   const handleExport = () => {
-    exportData(sessionCode, capabilities, strategies)
+    exportData(sessionCode, capabilities, gamePlans, strategies)
     toast.success('Data exported successfully!')
   }
 
@@ -59,8 +63,9 @@ export default function WorkspacePage() {
       try {
         const result = await importData(file)
         setCapabilities(result.capabilities)
+        setGamePlans(result.gamePlans)
         setStrategies(result.strategies)
-        toast.success(`Imported ${result.capabilities.length} capabilities and ${result.strategies.length} strategies`)
+        toast.success(`Imported ${result.capabilities.length} capabilities, ${result.gamePlans.length} game plans, and ${result.strategies.length} strategies`)
       } catch (err) {
         toast.error(err instanceof Error ? err.message : 'Failed to import data')
       }
@@ -132,6 +137,9 @@ export default function WorkspacePage() {
         />
 
         <div className="flex items-center gap-2">
+          <HelpButton title={activeTab === 'capabilities' ? capabilitiesHelp.title : strategyHelp.title}>
+            {activeTab === 'capabilities' ? capabilitiesHelp.content : strategyHelp.content}
+          </HelpButton>
           <Button
             variant="secondary"
             size="sm"

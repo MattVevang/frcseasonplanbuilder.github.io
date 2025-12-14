@@ -126,7 +126,7 @@ export default function WorkspacePage() {
         </div>
         <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">
           <Clock className="w-3.5 h-3.5" />
-          <span>Data expires after 30 days of inactivity</span>
+          <span>Data expires after 30 days - Export to backup, Import to restore</span>
         </div>
       </div>
 

@@ -46,6 +46,18 @@ export const overviewHelp: HelpSection = {
           Choose something unique that others won't guess—combining your team number with a memorable phrase works well (e.g., "1234-turbo-bots"). Anyone with your code can view and edit your session.
         </p>
       </section>
+
+      <section>
+        <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Data retention & backups</h3>
+        <p className="text-gray-600 dark:text-gray-300 mb-2">
+          Session data is automatically deleted after 30 days of inactivity. To preserve your work:
+        </p>
+        <ul className="list-disc list-inside text-gray-600 dark:text-gray-300 space-y-1">
+          <li><strong>Export</strong> saves your entire plan as a JSON file to your computer</li>
+          <li><strong>Import</strong> restores data from an exported file into your current session</li>
+          <li>You can import old backups into a new session—the data merges into whichever session you're currently in</li>
+        </ul>
+      </section>
     </div>
   ),
 }

@@ -92,7 +92,7 @@ export default function HomePage() {
         <div className="text-sm">
           <p className="font-medium text-amber-800 dark:text-amber-200">30-Day Data Retention</p>
           <p className="text-amber-700 dark:text-amber-300 mt-1">
-            Session data is automatically deleted after 30 days of inactivity. Use the Export feature to save a local backup of your plans.
+            Session data is automatically deleted after 30 days of inactivity. Use <strong>Export</strong> to save a backup, and <strong>Import</strong> to restore it into any session later.
           </p>
         </div>
       </div>

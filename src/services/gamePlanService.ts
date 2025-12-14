@@ -78,11 +78,23 @@ export async function updateGamePlan(
   const db = getFirebaseDb()
   if (!db) return
 
+  const now = new Date()
   const docRef = doc(db, 'sessions', sessionCode, 'gamePlans', id)
-  await updateDoc(docRef, {
-    ...data,
-    updatedAt: Timestamp.fromDate(new Date()),
-  })
+
+  try {
+    await updateDoc(docRef, {
+      ...data,
+      updatedAt: Timestamp.fromDate(now),
+    })
+  } catch {
+    // Document may not exist yet (e.g., after import) - create it
+    await setDoc(docRef, {
+      name: data.name || 'Untitled Plan',
+      description: data.description || null,
+      createdAt: Timestamp.fromDate(now),
+      updatedAt: Timestamp.fromDate(now),
+    })
+  }
 
   await incrementSessionVersion(sessionCode)
 }
@@ -113,6 +125,72 @@ export async function ensureDefaultGamePlan(sessionCode: string): Promise<GamePl
     name: 'Default Plan',
     description: 'Your primary game strategy',
   })
+}
+
+export async function duplicateGamePlan(
+  sessionCode: string,
+  sourcePlanId: string,
+  newName: string
+): Promise<GamePlan> {
+  const db = getFirebaseDb()
+  if (!db) throw new Error('Firebase not configured')
+
+  // Get the source strategies
+  const strategiesCol = collection(db, 'sessions', sessionCode, 'strategies')
+  const stratQuery = query(strategiesCol, orderBy('rank', 'asc'))
+  const stratSnapshot = await getDocs(stratQuery)
+
+  const sourceStrategies = stratSnapshot.docs
+    .filter((docSnap) => docSnap.data().gamePlanId === sourcePlanId)
+    .map((docSnap) => docSnap.data())
+
+  // Create new game plan
+  const newPlanId = uuidv4()
+  const now = new Date()
+
+  const newGamePlan: GamePlan = {
+    id: newPlanId,
+    name: newName,
+    description: undefined,
+    createdAt: now,
+    updatedAt: now,
+  }
+
+  const batch = writeBatch(db)
+
+  // Add new game plan
+  const planDocRef = doc(db, 'sessions', sessionCode, 'gamePlans', newPlanId)
+  batch.set(planDocRef, {
+    name: newName,
+    description: null,
+    createdAt: Timestamp.fromDate(now),
+    updatedAt: Timestamp.fromDate(now),
+  })
+
+  // Duplicate all strategies with new IDs
+  sourceStrategies.forEach((strat) => {
+    const newStratId = uuidv4()
+    const stratDocRef = doc(db, 'sessions', sessionCode, 'strategies', newStratId)
+    batch.set(stratDocRef, {
+      gamePlanId: newPlanId,
+      rank: strat.rank,
+      phase: strat.phase,
+      title: strat.title,
+      description: strat.description,
+      expectedPoints: strat.expectedPoints,
+      cycleTime: strat.cycleTime || null,
+      cyclesPerMatch: strat.cyclesPerMatch || null,
+      isDefensive: strat.isDefensive,
+      notes: strat.notes,
+      createdAt: Timestamp.fromDate(now),
+      updatedAt: Timestamp.fromDate(now),
+    })
+  })
+
+  await batch.commit()
+  await incrementSessionVersion(sessionCode)
+
+  return newGamePlan
 }
 
 export async function clearAllGamePlans(sessionCode: string): Promise<void> {

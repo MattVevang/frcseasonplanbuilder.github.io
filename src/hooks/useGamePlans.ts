@@ -97,6 +97,32 @@ export function useGamePlans(sessionCode: string | null) {
     [sessionCode, setGamePlans]
   )
 
+  const duplicateGamePlan = useCallback(
+    async (sourcePlanId: string, newName: string) => {
+      if (sessionCode && isFirebaseConfigured()) {
+        try {
+          const newPlan = await gamePlanService.duplicateGamePlan(sessionCode, sourcePlanId, newName)
+          // Firebase listeners will update the store automatically
+          return newPlan
+        } catch (error) {
+          console.error('Failed to duplicate game plan:', error)
+          toast.error('Failed to duplicate game plan.')
+          return null
+        }
+      } else {
+        // Local-only duplication
+        const sourcePlan = gamePlans.find((gp) => gp.id === sourcePlanId)
+        if (!sourcePlan) return null
+
+        const newPlan = localAddGamePlan({ name: newName, description: sourcePlan.description })
+        // Note: strategies won't be duplicated in local-only mode without more work
+        toast.success('Plan created (strategies not copied in offline mode)')
+        return newPlan
+      }
+    },
+    [sessionCode, gamePlans, localAddGamePlan]
+  )
+
   const selectedGamePlan = gamePlans.find((gp) => gp.id === selectedGamePlanId) || gamePlans[0] || null
 
   return {
@@ -106,6 +132,7 @@ export function useGamePlans(sessionCode: string | null) {
     addGamePlan,
     updateGamePlan,
     deleteGamePlan,
+    duplicateGamePlan,
     selectGamePlan,
     setGamePlans,
     importGamePlans,

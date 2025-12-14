@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { ChevronDown, Plus, Pencil, Trash2 } from 'lucide-react'
+import { ChevronDown, Plus, Pencil, Trash2, Copy } from 'lucide-react'
 import { useGamePlans } from '../../hooks/useGamePlans'
 import { GamePlan } from '../../types/strategy'
 import Modal from '../ui/Modal'
 import GamePlanForm from './GamePlanForm'
 import ConfirmDialog from '../ui/ConfirmDialog'
+import toast from 'react-hot-toast'
 
 interface GamePlanSelectorProps {
   sessionCode: string
@@ -23,6 +24,7 @@ export default function GamePlanSelector({ sessionCode }: GamePlanSelectorProps)
     addGamePlan,
     updateGamePlan,
     deleteGamePlan,
+    duplicateGamePlan,
   } = useGamePlans(sessionCode)
 
   const handleSelectPlan = (id: string) => {
@@ -47,6 +49,17 @@ export default function GamePlanSelector({ sessionCode }: GamePlanSelectorProps)
     e.stopPropagation()
     setDeletingPlan(plan)
     setIsDropdownOpen(false)
+  }
+
+  const handleDuplicatePlan = async (e: React.MouseEvent, plan: GamePlan) => {
+    e.stopPropagation()
+    setIsDropdownOpen(false)
+    const newName = `${plan.name} (Copy)`
+    const result = await duplicateGamePlan(plan.id, newName)
+    if (result) {
+      toast.success(`Created "${newName}" with all strategies`)
+      selectGamePlan(result.id)
+    }
   }
 
   const handleFormSubmit = async (data: { name: string; description?: string }) => {
@@ -109,6 +122,13 @@ export default function GamePlanSelector({ sessionCode }: GamePlanSelectorProps)
                         )}
                       </div>
                       <div className="flex items-center gap-1 ml-2">
+                        <button
+                          onClick={(e) => handleDuplicatePlan(e, plan)}
+                          className="p-1 text-gray-400 hover:text-primary-600 dark:hover:text-primary-400"
+                          title="Duplicate plan"
+                        >
+                          <Copy className="w-3.5 h-3.5" />
+                        </button>
                         <button
                           onClick={(e) => handleEditPlan(e, plan)}
                           className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"

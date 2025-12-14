@@ -32,6 +32,12 @@ interface StrategyState {
   clearAll: () => void
   setStrategies: (strategies: Strategy[]) => void
   getProjectedScore: (gamePlanId?: string) => { auto: number; teleop: number; endgame: number; total: number }
+  getTimeBudget: (gamePlanId?: string) => {
+    auto: { used: number; available: number }
+    teleop: { used: number; available: number }
+    endgame: { used: number; available: number }
+    total: { used: number; available: number }
+  }
 }
 
 export const useStrategyStore = create<StrategyState>()(
@@ -266,6 +272,56 @@ export const useStrategyStore = create<StrategyState>()(
         }
 
         return { auto, teleop, endgame, total: auto + teleop + endgame }
+      },
+
+      getTimeBudget: (gamePlanId) => {
+        const { strategies, selectedGamePlanId } = get()
+        const targetGamePlanId = gamePlanId || selectedGamePlanId
+
+        // FRC match phase durations in seconds
+        const PHASE_DURATIONS = {
+          auto: 15,
+          teleop: 135, // 2:15
+          endgame: 20, // Last 20s of teleop, but tracked separately for planning
+        }
+
+        const filtered = targetGamePlanId
+          ? strategies.filter((s) => s.gamePlanId === targetGamePlanId)
+          : strategies
+
+        let autoTime = 0
+        let teleopTime = 0
+        let endgameTime = 0
+
+        for (const strategy of filtered) {
+          // Calculate time: cycleTime * cyclesPerMatch, or just cycleTime if no cycles specified
+          if (strategy.cycleTime) {
+            const cycles = strategy.cyclesPerMatch || 1
+            const totalTime = strategy.cycleTime * cycles
+
+            switch (strategy.phase) {
+              case 'auto':
+                autoTime += totalTime
+                break
+              case 'teleop':
+                teleopTime += totalTime
+                break
+              case 'endgame':
+                endgameTime += totalTime
+                break
+            }
+          }
+        }
+
+        return {
+          auto: { used: autoTime, available: PHASE_DURATIONS.auto },
+          teleop: { used: teleopTime, available: PHASE_DURATIONS.teleop },
+          endgame: { used: endgameTime, available: PHASE_DURATIONS.endgame },
+          total: {
+            used: autoTime + teleopTime + endgameTime,
+            available: PHASE_DURATIONS.auto + PHASE_DURATIONS.teleop,
+          },
+        }
       },
     }),
     {

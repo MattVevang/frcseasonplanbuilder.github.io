@@ -92,8 +92,21 @@ export const strategyHelp: HelpSection = {
       <section>
         <h3 className="font-semibold text-gray-900 dark:text-white mb-2">What are strategies?</h3>
         <p className="text-gray-600 dark:text-gray-300">
-          Strategies are specific actions or plays you plan to execute during matches. They're tied to match phases and include expected point values to help project your scoring potential.
+          Strategies are specific actions or plays you plan to execute during matches. They're tied to match phases and include expected point values and cycle times to help project your scoring and time budget.
         </p>
+      </section>
+
+      <section>
+        <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Game plans</h3>
+        <p className="text-gray-600 dark:text-gray-300 mb-2">
+          Organize strategies into separate game plans to compare different approaches:
+        </p>
+        <ul className="list-disc list-inside text-gray-600 dark:text-gray-300 space-y-1">
+          <li>Use the dropdown to switch between plans</li>
+          <li>Click the <strong>copy icon</strong> to duplicate a plan with all its strategies</li>
+          <li>Click the <strong>pencil icon</strong> to rename a plan</li>
+          <li>Each plan has its own score projection and time budget</li>
+        </ul>
       </section>
 
       <section>
@@ -106,23 +119,30 @@ export const strategyHelp: HelpSection = {
       </section>
 
       <section>
-        <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Cycles per phase</h3>
+        <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Cycle time & count</h3>
         <p className="text-gray-600 dark:text-gray-300">
-          If a strategy is repeated multiple times during its phase (like scoring game pieces), enter how many cycles you expect to complete. The score projection will multiply your expected points by the cycle count.
+          Enter how long each cycle takes (in seconds) and how many cycles you plan to complete. This data powers both the score projection (points × cycles) and the time budget to ensure your plan fits within match time limits.
+        </p>
+      </section>
+
+      <section>
+        <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Time budget</h3>
+        <p className="text-gray-600 dark:text-gray-300">
+          The time budget shows how much of each phase you've planned for. If you exceed the available time (shown in red), you'll need to reduce cycles or drop lower-priority strategies. Use this to validate that your plan is realistic.
         </p>
       </section>
 
       <section>
         <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Score projection</h3>
         <p className="text-gray-600 dark:text-gray-300">
-          The score projection at the top shows your estimated match score based on all non-defensive strategies. Use this to evaluate whether your strategy is competitive and identify where to focus improvements.
+          Shows your estimated match score based on all non-defensive strategies. Use this to evaluate whether your strategy is competitive and identify where to focus improvements.
         </p>
       </section>
 
       <section>
         <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Defensive strategies</h3>
         <p className="text-gray-600 dark:text-gray-300">
-          Mark strategies as "defensive" if they don't directly score points (like blocking opponents). These are tracked separately and won't affect your score projection.
+          Mark strategies as "defensive" if they don't directly score points (like blocking opponents). These are tracked separately and won't affect your score projection, but they still contribute to your time budget.
         </p>
       </section>
     </div>

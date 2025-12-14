@@ -1,10 +1,17 @@
-import { Link, useParams } from 'react-router-dom'
-import { Bot, Moon, Sun, ExternalLink } from 'lucide-react'
+import { useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
+import { Bot, Moon, Sun, ExternalLink, QrCode } from 'lucide-react'
 import { useThemeStore } from '../../stores/themeStore'
+import QRCodeModal from '../ui/QRCodeModal'
 
 export default function Header() {
-  const { sessionCode } = useParams<{ sessionCode: string }>()
+  const location = useLocation()
   const { isDark, toggleTheme } = useThemeStore()
+  const [showQRCode, setShowQRCode] = useState(false)
+
+  // Extract session code from URL path (works outside Route tree)
+  const sessionMatch = location.pathname.match(/^\/session\/(.+)$/)
+  const sessionCode = sessionMatch ? sessionMatch[1] : null
 
   return (
     <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
@@ -17,11 +24,21 @@ export default function Header() {
 
           <div className="flex items-center gap-4">
             {sessionCode && (
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-primary-100 dark:bg-primary-900/30 rounded-lg">
-                <span className="text-sm font-medium text-primary-700 dark:text-primary-300">
-                  Session: {sessionCode}
-                </span>
-              </div>
+              <>
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-primary-100 dark:bg-primary-900/30 rounded-lg">
+                  <span className="text-sm font-medium text-primary-700 dark:text-primary-300">
+                    Session: {sessionCode}
+                  </span>
+                </div>
+                <button
+                  onClick={() => setShowQRCode(true)}
+                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  aria-label="Show QR code to share session"
+                  title="Share session via QR code"
+                >
+                  <QrCode className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                </button>
+              </>
             )}
 
             <a
@@ -49,6 +66,14 @@ export default function Header() {
           </div>
         </div>
       </div>
+
+      {sessionCode && (
+        <QRCodeModal
+          isOpen={showQRCode}
+          onClose={() => setShowQRCode(false)}
+          sessionCode={sessionCode}
+        />
+      )}
     </header>
   )
 }

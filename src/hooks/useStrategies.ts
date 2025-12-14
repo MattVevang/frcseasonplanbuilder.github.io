@@ -5,7 +5,10 @@ import { isFirebaseConfigured } from '../services/firebase'
 import * as strategyService from '../services/strategyService'
 import toast from 'react-hot-toast'
 
-export function useStrategies(sessionCode: string | null) {
+export function useStrategies(rawSessionCode: string | null) {
+  // Normalize session code to lowercase for case-insensitive matching
+  const sessionCode = rawSessionCode?.toLowerCase() ?? null
+
   const rawStrategies = useStrategyStore((s) => s.strategies)
   const sortField = useStrategyStore((s) => s.sortField)
   const sortDirection = useStrategyStore((s) => s.sortDirection)

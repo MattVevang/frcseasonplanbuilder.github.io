@@ -5,9 +5,13 @@ import { Toaster } from 'react-hot-toast'
 import App from './App'
 import './index.css'
 
+// Get base path from Vite's base config (for GitHub Pages project sites)
+// This will be '/' for custom domains or organization sites
+const basename = import.meta.env.BASE_URL
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename={basename}>
       <App />
       <Toaster
         position="bottom-right"

@@ -9,7 +9,6 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-  // Base path for GitHub Pages project site
-  // Change to '/' if using a custom domain or organization site
-  base: '/frcseasonplanbuilder.github.io/',
+  // Base path - use '/' for custom domains, '/repo-name/' for project sites
+  base: '/',
 })

@@ -1,5 +1,5 @@
 import { Link, useParams } from 'react-router-dom'
-import { Bot, Moon, Sun } from 'lucide-react'
+import { Bot, Moon, Sun, ExternalLink } from 'lucide-react'
 import { useThemeStore } from '../../stores/themeStore'
 
 export default function Header() {
@@ -23,6 +23,17 @@ export default function Header() {
                 </span>
               </div>
             )}
+
+            <a
+              href="https://github.com/MattVevang/frcseasonplanbuilder.github.io"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              aria-label="View on GitHub"
+              title="View on GitHub - Report issues or give feedback"
+            >
+              <ExternalLink className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            </a>
 
             <button
               onClick={toggleTheme}

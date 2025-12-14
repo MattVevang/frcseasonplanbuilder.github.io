@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Bot, Users, ListChecks, Target, ArrowRight, Clock } from 'lucide-react'
+import { Bot, Users, ListChecks, Target, ArrowRight, Clock, MessageSquare } from 'lucide-react'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 
@@ -106,6 +106,22 @@ export default function HomePage() {
           title="Real-time Collaboration"
           description="Work together with your team, synced automatically"
         />
+      </div>
+
+      {/* Feedback/Issues link */}
+      <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mt-4">
+        <MessageSquare className="w-4 h-4" />
+        <span>
+          Have feedback or found an issue?{' '}
+          <a
+            href="https://github.com/MattVevang/frcseasonplanbuilder.github.io/issues"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary-600 dark:text-primary-400 hover:underline"
+          >
+            Let us know on GitHub
+          </a>
+        </span>
       </div>
     </div>
   )

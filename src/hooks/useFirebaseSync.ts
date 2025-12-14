@@ -12,7 +12,10 @@ interface UseFirebaseSyncOptions {
   sessionCode: string | null
 }
 
-export function useFirebaseSync({ sessionCode }: UseFirebaseSyncOptions) {
+export function useFirebaseSync({ sessionCode: rawSessionCode }: UseFirebaseSyncOptions) {
+  // Normalize session code to lowercase for case-insensitive matching
+  const sessionCode = rawSessionCode?.toLowerCase() ?? null
+
   const [isConnected, setIsConnected] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [hasRemoteUpdate, setHasRemoteUpdate] = useState(false)

@@ -5,7 +5,10 @@ import { isFirebaseConfigured } from '../services/firebase'
 import * as capabilityService from '../services/capabilityService'
 import toast from 'react-hot-toast'
 
-export function useCapabilities(sessionCode: string | null) {
+export function useCapabilities(rawSessionCode: string | null) {
+  // Normalize session code to lowercase for case-insensitive matching
+  const sessionCode = rawSessionCode?.toLowerCase() ?? null
+
   const rawCapabilities = useCapabilityStore((s) => s.capabilities)
   const sortField = useCapabilityStore((s) => s.sortField)
   const sortDirection = useCapabilityStore((s) => s.sortDirection)

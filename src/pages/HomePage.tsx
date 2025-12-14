@@ -31,7 +31,7 @@ export default function HomePage() {
     }
 
     setError('')
-    navigate(`/session/${trimmedCode}`)
+    navigate(`/session/${trimmedCode.toLowerCase()}`)
   }
 
   return (

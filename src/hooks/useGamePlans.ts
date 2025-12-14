@@ -5,7 +5,10 @@ import { isFirebaseConfigured } from '../services/firebase'
 import * as gamePlanService from '../services/gamePlanService'
 import toast from 'react-hot-toast'
 
-export function useGamePlans(sessionCode: string | null) {
+export function useGamePlans(rawSessionCode: string | null) {
+  // Normalize session code to lowercase for case-insensitive matching
+  const sessionCode = rawSessionCode?.toLowerCase() ?? null
+
   const gamePlans = useStrategyStore((s) => s.gamePlans)
   const selectedGamePlanId = useStrategyStore((s) => s.selectedGamePlanId)
   const localAddGamePlan = useStrategyStore((s) => s.addGamePlan)

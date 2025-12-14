@@ -95,11 +95,33 @@ service cloud.firestore {
 
 ## Deployment
 
-The app is configured for GitHub Pages deployment:
+The app is configured for GitHub Pages deployment with branch protection.
+
+### Production Deployment
 
 1. Add your Firebase secrets to your repository settings
-2. Push to the `main` branch
-3. GitHub Actions will automatically build and deploy
+2. Create a PR to the `main` branch
+3. Merge the PR - GitHub Actions will automatically build and deploy
+
+### Branch Naming Convention
+
+**All feature branches must use the `feature/` prefix** to enable test deployments:
+
+- ✅ `feature/add-qr-codes`
+- ✅ `feature/fix-session-display`
+- ❌ `add-qr-codes` (cannot deploy)
+- ❌ `bugfix/something` (cannot deploy)
+
+### Test Deployments
+
+Feature branches can trigger manual deployments for testing:
+
+1. Go to Actions → "Deploy to GitHub Pages"
+2. Click "Run workflow"
+3. Select your `feature/*` branch
+4. The deployment will temporarily update the live site
+
+**Note:** Only `main` and `feature/*` branches are allowed to deploy. After testing, merge to `main` to make changes permanent, or re-run the workflow from `main` to rollback.
 
 ## Tech Stack
 

@@ -1,17 +1,34 @@
+import { useMemo } from 'react'
 import { useStrategyStore } from '../../stores/strategyStore'
 import { MatchPhase } from '../../types/strategy'
+import { getMatchPhases } from '../../config/matchTiming'
+import { getSessionSeasonVersion } from '../../utils/demoUtils'
 import { cn } from '../../utils/cn'
 
-export default function PhaseFilter() {
+interface PhaseFilterProps {
+  sessionCode: string
+}
+
+export default function PhaseFilter({ sessionCode }: PhaseFilterProps) {
   const phaseFilter = useStrategyStore((state) => state.phaseFilter)
   const setPhaseFilter = useStrategyStore((state) => state.setPhaseFilter)
+  const seasonVersion = getSessionSeasonVersion(sessionCode)
+  const phases = getMatchPhases(seasonVersion)
 
-  const filters: { value: MatchPhase | 'all'; label: string }[] = [
-    { value: 'all', label: 'All' },
-    { value: 'auto', label: 'Auto' },
-    { value: 'teleop', label: 'Teleop' },
-    { value: 'endgame', label: 'Endgame' },
-  ]
+  const filters = useMemo(() => {
+    const baseFilters: { value: MatchPhase | 'all'; label: string }[] = [
+      { value: 'all', label: 'All' },
+      { value: 'auto', label: 'Auto' },
+      { value: 'teleop', label: 'Teleop' },
+    ]
+
+    // Only include endgame filter if the season has an endgame phase
+    if (phases.endgame.duration > 0) {
+      baseFilters.push({ value: 'endgame', label: 'Endgame' })
+    }
+
+    return baseFilters
+  }, [phases.endgame.duration])
 
   return (
     <div className="flex items-center gap-2">

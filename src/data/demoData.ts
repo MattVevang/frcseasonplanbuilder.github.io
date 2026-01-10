@@ -4,8 +4,12 @@ import { Strategy, GamePlan, MatchPhase } from '../types/strategy'
 // Helper to create timestamps
 const now = new Date()
 
+// ============================================
+// 2025 REEFSCAPE Demo Data (Legacy)
+// ============================================
+
 // Demo Capabilities - 2025 Reefscape robot capabilities
-export const demoCapabilities: Capability[] = [
+export const demoCapabilities2025: Capability[] = [
   {
     id: 'demo-cap-1',
     rank: 1,
@@ -98,8 +102,8 @@ export const demoCapabilities: Capability[] = [
   },
 ]
 
-// Demo Game Plans
-export const demoGamePlans: GamePlan[] = [
+// Demo Game Plans - 2025
+export const demoGamePlans2025: GamePlan[] = [
   {
     id: 'demo-plan-1',
     name: 'Scoring Focus',
@@ -116,8 +120,8 @@ export const demoGamePlans: GamePlan[] = [
   },
 ]
 
-// Demo Strategies - Scoring Focus Plan
-const scoringFocusStrategies: Strategy[] = [
+// Demo Strategies - 2025 Scoring Focus Plan
+const scoringFocusStrategies2025: Strategy[] = [
   {
     id: 'demo-strat-1',
     gamePlanId: 'demo-plan-1',
@@ -210,8 +214,8 @@ const scoringFocusStrategies: Strategy[] = [
   },
 ]
 
-// Demo Strategies - Balanced Plan
-const balancedStrategies: Strategy[] = [
+// Demo Strategies - 2025 Balanced Plan
+const balancedStrategies2025: Strategy[] = [
   {
     id: 'demo-strat-7',
     gamePlanId: 'demo-plan-2',
@@ -304,5 +308,306 @@ const balancedStrategies: Strategy[] = [
   },
 ]
 
-// Combined strategies
-export const demoStrategies: Strategy[] = [...scoringFocusStrategies, ...balancedStrategies]
+// Combined 2025 strategies
+export const demoStrategies2025: Strategy[] = [...scoringFocusStrategies2025, ...balancedStrategies2025]
+
+// ============================================
+// 2026 DECODE Demo Data
+// ============================================
+
+// Demo Capabilities - 2026 DECODE robot capabilities
+export const demoCapabilities2026: Capability[] = [
+  {
+    id: 'demo-cap-2026-1',
+    rank: 1,
+    title: 'Artifact Floor Intake',
+    description: 'Pick up purple and green artifacts from spike marks reliably',
+    priority: 'critical' as Priority,
+    createdAt: now,
+    updatedAt: now,
+  },
+  {
+    id: 'demo-cap-2026-2',
+    rank: 2,
+    title: 'CLASSIFIED Scoring',
+    description: 'Score artifacts through GOAL to RAMP for CLASSIFIED points (3 pts each)',
+    priority: 'critical' as Priority,
+    createdAt: now,
+    updatedAt: now,
+  },
+  {
+    id: 'demo-cap-2026-3',
+    rank: 3,
+    title: 'PATTERN Recognition',
+    description: 'Decode OBELISK MOTIF and match artifact colors on RAMP',
+    priority: 'high' as Priority,
+    createdAt: now,
+    updatedAt: now,
+  },
+  {
+    id: 'demo-cap-2026-4',
+    rank: 4,
+    title: 'LEAVE Launch Line',
+    description: 'Move off LAUNCH LINE during AUTO (3 pts)',
+    priority: 'high' as Priority,
+    createdAt: now,
+    updatedAt: now,
+  },
+  {
+    id: 'demo-cap-2026-5',
+    rank: 5,
+    title: 'Return to BASE - Full',
+    description: 'Fully return to BASE zone at end of TELEOP (10 pts)',
+    priority: 'high' as Priority,
+    createdAt: now,
+    updatedAt: now,
+  },
+  {
+    id: 'demo-cap-2026-6',
+    rank: 6,
+    title: 'OVERFLOW Scoring',
+    description: 'Score artifacts as OVERFLOW when RAMP is blocked (1 pt each)',
+    priority: 'medium' as Priority,
+    createdAt: now,
+    updatedAt: now,
+  },
+  {
+    id: 'demo-cap-2026-7',
+    rank: 7,
+    title: 'DEPOT Scoring',
+    description: 'Place artifacts in DEPOT for bonus points (1 pt each)',
+    priority: 'medium' as Priority,
+    createdAt: now,
+    updatedAt: now,
+  },
+  {
+    id: 'demo-cap-2026-8',
+    rank: 8,
+    title: 'Human Player Coordination',
+    description: 'Receive artifacts from human player in Loading Zone',
+    priority: 'medium' as Priority,
+    createdAt: now,
+    updatedAt: now,
+  },
+  {
+    id: 'demo-cap-2026-9',
+    rank: 9,
+    title: 'Artifact Preloading',
+    description: 'Efficiently use 3 preloaded artifacts at match start',
+    priority: 'high' as Priority,
+    createdAt: now,
+    updatedAt: now,
+  },
+  {
+    id: 'demo-cap-2026-10',
+    rank: 10,
+    title: 'Dual BASE Coordination',
+    description: 'Coordinate with alliance partner for dual full BASE bonus (10 pts)',
+    priority: 'low' as Priority,
+    createdAt: now,
+    updatedAt: now,
+  },
+]
+
+// Demo Game Plans - 2026
+export const demoGamePlans2026: GamePlan[] = [
+  {
+    id: 'demo-plan-2026-1',
+    name: 'High Cycle Strategy',
+    description: 'Maximize CLASSIFIED scoring with fast cycles and PATTERN matching',
+    createdAt: now,
+    updatedAt: now,
+  },
+  {
+    id: 'demo-plan-2026-2',
+    name: 'Consistent Scorer',
+    description: 'Reliable scoring with guaranteed BASE return for consistent points',
+    createdAt: now,
+    updatedAt: now,
+  },
+]
+
+// Demo Strategies - 2026 High Cycle Plan
+const highCycleStrategies2026: Strategy[] = [
+  {
+    id: 'demo-strat-2026-1',
+    gamePlanId: 'demo-plan-2026-1',
+    rank: 1,
+    phase: 'auto' as MatchPhase,
+    title: 'LEAVE Launch Line',
+    description: 'Move off LAUNCH LINE to earn mobility points',
+    expectedPoints: 3,
+    cycleTime: 3,
+    cyclesPerMatch: 1,
+    isDefensive: false,
+    notes: 'First priority in AUTO - guaranteed 3 points',
+    createdAt: now,
+    updatedAt: now,
+  },
+  {
+    id: 'demo-strat-2026-2',
+    gamePlanId: 'demo-plan-2026-1',
+    rank: 2,
+    phase: 'auto' as MatchPhase,
+    title: 'Score Preloaded CLASSIFIED',
+    description: 'Score 3 preloaded artifacts as CLASSIFIED with PATTERN match',
+    expectedPoints: 15,
+    cycleTime: 25,
+    cyclesPerMatch: 1,
+    isDefensive: false,
+    notes: '3 artifacts x (3 CLASSIFIED + 2 PATTERN) = 15 pts in AUTO',
+    createdAt: now,
+    updatedAt: now,
+  },
+  {
+    id: 'demo-strat-2026-3',
+    gamePlanId: 'demo-plan-2026-1',
+    rank: 3,
+    phase: 'teleop' as MatchPhase,
+    title: 'CLASSIFIED Cycles',
+    description: 'Fast cycles scoring artifacts through GOAL to RAMP',
+    expectedPoints: 5,
+    cycleTime: 15,
+    cyclesPerMatch: 6,
+    isDefensive: false,
+    notes: '6 cycles x (3 CLASSIFIED + 2 PATTERN) = 30 pts - primary TELEOP action',
+    createdAt: now,
+    updatedAt: now,
+  },
+  {
+    id: 'demo-strat-2026-4',
+    gamePlanId: 'demo-plan-2026-1',
+    rank: 4,
+    phase: 'teleop' as MatchPhase,
+    title: 'DEPOT Cleanup',
+    description: 'Score remaining artifacts in DEPOT for bonus points',
+    expectedPoints: 1,
+    cycleTime: 5,
+    cyclesPerMatch: 3,
+    isDefensive: false,
+    notes: 'Low risk points at end of match - 3 pts total',
+    createdAt: now,
+    updatedAt: now,
+  },
+  {
+    id: 'demo-strat-2026-5',
+    gamePlanId: 'demo-plan-2026-1',
+    rank: 5,
+    phase: 'teleop' as MatchPhase,
+    title: 'Full Return to BASE',
+    description: 'Return fully to BASE zone before match ends',
+    expectedPoints: 10,
+    cycleTime: 10,
+    cyclesPerMatch: 1,
+    isDefensive: false,
+    notes: 'Critical endgame action - must leave time for this!',
+    createdAt: now,
+    updatedAt: now,
+  },
+]
+
+// Demo Strategies - 2026 Consistent Scorer Plan
+const consistentStrategies2026: Strategy[] = [
+  {
+    id: 'demo-strat-2026-6',
+    gamePlanId: 'demo-plan-2026-2',
+    rank: 1,
+    phase: 'auto' as MatchPhase,
+    title: 'LEAVE Launch Line',
+    description: 'Move off LAUNCH LINE for mobility points',
+    expectedPoints: 3,
+    cycleTime: 3,
+    cyclesPerMatch: 1,
+    isDefensive: false,
+    notes: 'Reliable AUTO start',
+    createdAt: now,
+    updatedAt: now,
+  },
+  {
+    id: 'demo-strat-2026-7',
+    gamePlanId: 'demo-plan-2026-2',
+    rank: 2,
+    phase: 'auto' as MatchPhase,
+    title: 'Score 2 Preloaded CLASSIFIED',
+    description: 'Score 2 preloaded artifacts as CLASSIFIED',
+    expectedPoints: 6,
+    cycleTime: 20,
+    cyclesPerMatch: 1,
+    isDefensive: false,
+    notes: 'Conservative AUTO - leave 1 preload for safety',
+    createdAt: now,
+    updatedAt: now,
+  },
+  {
+    id: 'demo-strat-2026-8',
+    gamePlanId: 'demo-plan-2026-2',
+    rank: 3,
+    phase: 'teleop' as MatchPhase,
+    title: 'Steady CLASSIFIED Cycles',
+    description: 'Consistent cycles scoring CLASSIFIED artifacts',
+    expectedPoints: 3,
+    cycleTime: 18,
+    cyclesPerMatch: 5,
+    isDefensive: false,
+    notes: '5 cycles x 3 pts = 15 pts - reliable TELEOP scoring',
+    createdAt: now,
+    updatedAt: now,
+  },
+  {
+    id: 'demo-strat-2026-9',
+    gamePlanId: 'demo-plan-2026-2',
+    rank: 4,
+    phase: 'teleop' as MatchPhase,
+    title: 'OVERFLOW Backup',
+    description: 'Score as OVERFLOW when RAMP is contested',
+    expectedPoints: 1,
+    cycleTime: 12,
+    cyclesPerMatch: 2,
+    isDefensive: false,
+    notes: 'Backup option when partner is using RAMP',
+    createdAt: now,
+    updatedAt: now,
+  },
+  {
+    id: 'demo-strat-2026-10',
+    gamePlanId: 'demo-plan-2026-2',
+    rank: 5,
+    phase: 'teleop' as MatchPhase,
+    title: 'Guaranteed BASE Return',
+    description: 'Ensure full return to BASE with extra time buffer',
+    expectedPoints: 10,
+    cycleTime: 15,
+    cyclesPerMatch: 1,
+    isDefensive: false,
+    notes: 'Leave 15s buffer for guaranteed BASE points',
+    createdAt: now,
+    updatedAt: now,
+  },
+  {
+    id: 'demo-strat-2026-11',
+    gamePlanId: 'demo-plan-2026-2',
+    rank: 6,
+    phase: 'teleop' as MatchPhase,
+    title: 'Alliance Defense Support',
+    description: 'Play defense or block opponent scoring if ahead',
+    expectedPoints: 0,
+    cycleTime: 20,
+    cyclesPerMatch: 1,
+    isDefensive: true,
+    notes: 'Flexible alliance support when scoring is maxed',
+    createdAt: now,
+    updatedAt: now,
+  },
+]
+
+// Combined 2026 strategies
+export const demoStrategies2026: Strategy[] = [...highCycleStrategies2026, ...consistentStrategies2026]
+
+// ============================================
+// Default Exports (2026 for new sessions)
+// ============================================
+
+// Default to 2026 data for new demo sessions
+export const demoCapabilities = demoCapabilities2026
+export const demoGamePlans = demoGamePlans2026
+export const demoStrategies = demoStrategies2026

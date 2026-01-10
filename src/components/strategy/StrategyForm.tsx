@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useStrategies } from '../../hooks/useStrategies'
 import { Strategy, MatchPhase } from '../../types/strategy'
-import { PHASE_OPTIONS } from '../../config/matchTiming'
+import { getPhaseOptions } from '../../config/matchTiming'
+import { getSessionSeasonVersion } from '../../utils/demoUtils'
 import Button from '../ui/Button'
 import Input from '../ui/Input'
 import Textarea from '../ui/Textarea'
@@ -14,6 +15,8 @@ interface StrategyFormProps {
 }
 
 export default function StrategyForm({ strategy, sessionCode, onClose }: StrategyFormProps) {
+  const seasonVersion = getSessionSeasonVersion(sessionCode)
+  const phaseOptions = useMemo(() => getPhaseOptions(seasonVersion), [seasonVersion])
   const [phase, setPhase] = useState<MatchPhase>('teleop')
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -105,7 +108,7 @@ export default function StrategyForm({ strategy, sessionCode, onClose }: Strateg
           id="phase"
           value={phase}
           onChange={(e) => setPhase(e.target.value as MatchPhase)}
-          options={PHASE_OPTIONS}
+          options={phaseOptions}
         />
 
         <Input

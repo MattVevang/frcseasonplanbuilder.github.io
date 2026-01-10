@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware'
 import { v4 as uuidv4 } from 'uuid'
 import { Strategy, StrategyFormData, StrategySortField, MatchPhase, GamePlan, GamePlanFormData } from '../types/strategy'
 import { SortDirection } from '../types/capability'
-import { MATCH_PHASES, TOTAL_MATCH_TIME } from '../config/matchTiming'
+import { getMatchPhases, getTotalMatchTime, SeasonVersion } from '../config/matchTiming'
 
 interface StrategyState {
   strategies: Strategy[]
@@ -33,7 +33,7 @@ interface StrategyState {
   clearAll: () => void
   setStrategies: (strategies: Strategy[]) => void
   getProjectedScore: (gamePlanId?: string) => { auto: number; teleop: number; endgame: number; total: number }
-  getTimeBudget: (gamePlanId?: string) => {
+  getTimeBudget: (gamePlanId?: string, seasonVersion?: SeasonVersion) => {
     auto: { used: number; available: number }
     teleop: { used: number; available: number }
     endgame: { used: number; available: number }
@@ -268,7 +268,7 @@ export const useStrategyStore = create<StrategyState>()(
         return { auto, teleop, endgame, total: auto + teleop + endgame }
       },
 
-      getTimeBudget: (gamePlanId) => {
+      getTimeBudget: (gamePlanId, seasonVersion = '2026') => {
         const { strategies, selectedGamePlanId } = get()
         const targetGamePlanId = gamePlanId || selectedGamePlanId
 
@@ -300,13 +300,14 @@ export const useStrategyStore = create<StrategyState>()(
           }
         }
 
+        const phases = getMatchPhases(seasonVersion)
         return {
-          auto: { used: autoTime, available: MATCH_PHASES.auto.duration },
-          teleop: { used: teleopTime, available: MATCH_PHASES.teleop.duration },
-          endgame: { used: endgameTime, available: MATCH_PHASES.endgame.duration },
+          auto: { used: autoTime, available: phases.auto.duration },
+          teleop: { used: teleopTime, available: phases.teleop.duration },
+          endgame: { used: endgameTime, available: phases.endgame.duration },
           total: {
             used: autoTime + teleopTime + endgameTime,
-            available: TOTAL_MATCH_TIME,
+            available: getTotalMatchTime(seasonVersion),
           },
         }
       },

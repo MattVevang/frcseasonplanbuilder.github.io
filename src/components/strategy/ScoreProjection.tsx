@@ -1,14 +1,21 @@
 import { Calculator, Clock } from 'lucide-react'
 import { useStrategyStore } from '../../stores/strategyStore'
+import { getSessionSeasonVersion } from '../../utils/demoUtils'
 
-export default function ScoreProjection() {
+interface ScoreProjectionProps {
+  sessionCode: string
+}
+
+export default function ScoreProjection({ sessionCode }: ScoreProjectionProps) {
   const getProjectedScore = useStrategyStore((state) => state.getProjectedScore)
   const getTimeBudget = useStrategyStore((state) => state.getTimeBudget)
+  const seasonVersion = getSessionSeasonVersion(sessionCode)
   const score = getProjectedScore()
-  const timeBudget = getTimeBudget()
+  const timeBudget = getTimeBudget(undefined, seasonVersion)
 
   const hasScore = score.total > 0
   const hasTime = timeBudget.total.used > 0
+  const hasEndgame = timeBudget.endgame.available > 0
 
   if (!hasScore && !hasTime) {
     return null
@@ -24,7 +31,7 @@ export default function ScoreProjection() {
             <h3 className="font-semibold">Projected Score</h3>
           </div>
 
-          <div className="grid grid-cols-4 gap-3">
+          <div className={`grid gap-3 ${hasEndgame ? 'grid-cols-4' : 'grid-cols-3'}`}>
             <ScoreBlock
               label="Auto"
               value={score.auto}
@@ -35,11 +42,13 @@ export default function ScoreProjection() {
               value={score.teleop}
               color="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
             />
-            <ScoreBlock
-              label="Endgame"
-              value={score.endgame}
-              color="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
-            />
+            {hasEndgame && (
+              <ScoreBlock
+                label="Endgame"
+                value={score.endgame}
+                color="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
+              />
+            )}
             <ScoreBlock
               label="Total"
               value={score.total}
@@ -58,7 +67,7 @@ export default function ScoreProjection() {
             <h3 className="font-semibold">Time Budget</h3>
           </div>
 
-          <div className="grid grid-cols-4 gap-3">
+          <div className={`grid gap-3 ${hasEndgame ? 'grid-cols-4' : 'grid-cols-3'}`}>
             <TimeBlock
               label="Auto"
               used={timeBudget.auto.used}
@@ -71,12 +80,14 @@ export default function ScoreProjection() {
               available={timeBudget.teleop.available}
               color="blue"
             />
-            <TimeBlock
-              label="Endgame"
-              used={timeBudget.endgame.used}
-              available={timeBudget.endgame.available}
-              color="purple"
-            />
+            {hasEndgame && (
+              <TimeBlock
+                label="Endgame"
+                used={timeBudget.endgame.used}
+                available={timeBudget.endgame.available}
+                color="purple"
+              />
+            )}
             <TimeBlock
               label="Total"
               used={timeBudget.total.used}

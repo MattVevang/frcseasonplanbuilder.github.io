@@ -31,6 +31,7 @@ export async function getSession(sessionCode: string): Promise<Session | null> {
     lastModifiedAt: data.lastModifiedAt?.toDate() || new Date(),
     expiresAt: data.expiresAt?.toDate() || new Date(),
     version: data.version || 0,
+    seasonVersion: data.seasonVersion,  // undefined for legacy sessions = '2025'
   }
 }
 
@@ -51,6 +52,7 @@ export async function createSession(sessionCode: string, pinHash: string): Promi
     lastModifiedAt: now,
     expiresAt,
     version: 0,
+    seasonVersion: '2026',  // New sessions default to 2026
   }
 
   const sessionRef = doc(db, 'sessions', sessionCode)
@@ -61,6 +63,7 @@ export async function createSession(sessionCode: string, pinHash: string): Promi
     lastModifiedAt: serverTimestamp(),
     expiresAt: Timestamp.fromDate(expiresAt),
     version: 0,
+    seasonVersion: '2026',  // New sessions default to 2026
   })
 
   return session

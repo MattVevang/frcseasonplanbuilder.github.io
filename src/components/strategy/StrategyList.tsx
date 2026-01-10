@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import {
   DndContext,
   closestCenter,
@@ -17,6 +17,8 @@ import { Plus } from 'lucide-react'
 import { useStrategies } from '../../hooks/useStrategies'
 import { useGamePlans } from '../../hooks/useGamePlans'
 import { useStrategyStore } from '../../stores/strategyStore'
+import { getMatchPhases } from '../../config/matchTiming'
+import { getSessionSeasonVersion } from '../../utils/demoUtils'
 import StrategyItem from './StrategyItem'
 import StrategyForm from './StrategyForm'
 import SortControls from '../capabilities/SortControls'
@@ -38,6 +40,16 @@ export default function StrategyList({ sessionCode }: StrategyListProps) {
   const { strategies, reorderStrategies } = useStrategies(sessionCode)
   const { ensureDefaultGamePlan, selectedGamePlan } = useGamePlans(sessionCode)
   const phaseFilter = useStrategyStore((state) => state.phaseFilter)
+
+  const seasonVersion = getSessionSeasonVersion(sessionCode)
+  const phases = getMatchPhases(seasonVersion)
+  const hasEndgame = phases.endgame.duration > 0
+
+  const emptyDescription = useMemo(() => {
+    return hasEndgame
+      ? "Plan your match execution by adding strategies for Auto, Teleop, and Endgame phases."
+      : "Plan your match execution by adding strategies for Auto and Teleop phases."
+  }, [hasEndgame])
 
   // Ensure at least one game plan exists
   useEffect(() => {
@@ -84,12 +96,12 @@ export default function StrategyList({ sessionCode }: StrategyListProps) {
   return (
     <div className="space-y-4">
       <GamePlanSelector sessionCode={sessionCode} />
-      <ScoreProjection />
+      <ScoreProjection sessionCode={sessionCode} />
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
           <SortControls type="strategy" sessionCode={sessionCode} />
-          <PhaseFilter />
+          <PhaseFilter sessionCode={sessionCode} />
         </div>
         <Button
           onClick={() => setIsFormOpen(true)}
@@ -104,7 +116,7 @@ export default function StrategyList({ sessionCode }: StrategyListProps) {
       {strategies.length === 0 ? (
         <EmptyState
           title="No strategies yet"
-          description="Plan your match execution by adding strategies for Auto, Teleop, and Endgame phases."
+          description={emptyDescription}
           actionLabel="Add First Strategy"
           onAction={() => setIsFormOpen(true)}
         />

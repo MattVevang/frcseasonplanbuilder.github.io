@@ -130,7 +130,7 @@ export const strategyHelp: HelpSection = {
         <ul className="space-y-1 text-gray-600 dark:text-gray-300">
           <li><span className="font-medium text-green-600 dark:text-green-400">{MATCH_PHASES.auto.label} ({formatDuration(MATCH_PHASES.auto.duration)})</span> — Robot operates independently at match start</li>
           <li><span className="font-medium text-blue-600 dark:text-blue-400">{MATCH_PHASES.teleop.label} ({formatDuration(MATCH_PHASES.teleop.duration)})</span> — Driver-controlled period</li>
-          <li><span className="font-medium text-purple-600 dark:text-purple-400">{MATCH_PHASES.endgame.label} ({formatDuration(MATCH_PHASES.endgame.duration)})</span> — Final moments, often for climbing/parking</li>
+          <li><span className="font-medium text-purple-600 dark:text-purple-400">{MATCH_PHASES.endgame.label} ({formatDuration(MATCH_PHASES.endgame.duration)})</span> — Final moments for endgame scoring (BASE return, climbing, etc.)</li>
         </ul>
       </section>
 

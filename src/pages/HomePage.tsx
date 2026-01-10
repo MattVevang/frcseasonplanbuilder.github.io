@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Bot, Users, ListChecks, Target, ArrowRight, Clock, MessageSquare, Loader2, Lock, Eye } from 'lucide-react'
+import { Bot, Users, ListChecks, Target, ArrowRight, Clock, MessageSquare, Loader2, Lock, Eye, RefreshCw } from 'lucide-react'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import HelpButton from '../components/ui/HelpButton'
@@ -279,7 +279,7 @@ export default function HomePage() {
               Try Demo
             </Button>
             <p className="mt-2 text-xs text-center text-gray-500 dark:text-gray-400">
-              See example 2025 Reefscape data - no account needed
+              See example 2026 DECODE data - no account needed
             </p>
           </div>
         )}
@@ -292,6 +292,17 @@ export default function HomePage() {
           <p className="font-medium text-amber-800 dark:text-amber-200">30-Day Data Retention</p>
           <p className="text-amber-700 dark:text-amber-300 mt-1">
             Session data is automatically deleted after 30 days of inactivity. Use <strong>Export</strong> to save a backup, and <strong>Import</strong> to restore it into any session later.
+          </p>
+        </div>
+      </div>
+
+      {/* 2026 Season Update notice */}
+      <div className="flex items-start gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg max-w-md">
+        <RefreshCw className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+        <div className="text-sm">
+          <p className="font-medium text-blue-800 dark:text-blue-200">2026 Season Update</p>
+          <p className="text-blue-700 dark:text-blue-300 mt-1">
+            Existing plans created before January 2026 will continue to use 2025 match timing. New plans automatically use updated 2026 timing (30s Auto, 2:00 Teleop).
           </p>
         </div>
       </div>

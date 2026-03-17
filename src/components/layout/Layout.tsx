@@ -1,7 +1,6 @@
 import { ReactNode } from 'react'
 import Header from './Header'
-
-const APP_VERSION = '1.11.0'
+import { version as APP_VERSION } from '../../../package.json'
 
 interface LayoutProps {
   children: ReactNode

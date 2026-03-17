@@ -127,6 +127,13 @@ export async function deleteSession(sessionCode: string): Promise<void> {
     await deleteDoc(capDoc.ref)
   }
 
+  // Delete capabilityCategories subcollection
+  const capCategoriesRef = collection(db, 'sessions', sessionCode, 'capabilityCategories')
+  const capCatSnapshot = await getDocs(capCategoriesRef)
+  for (const catDoc of capCatSnapshot.docs) {
+    await deleteDoc(catDoc.ref)
+  }
+
   // Delete strategies subcollection
   const strategiesRef = collection(db, 'sessions', sessionCode, 'strategies')
   const stratSnapshot = await getDocs(strategiesRef)

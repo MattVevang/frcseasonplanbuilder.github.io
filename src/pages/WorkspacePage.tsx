@@ -39,7 +39,7 @@ export default function WorkspacePage() {
   // Get PIN from URL
   const pin = searchParams.get('pin')
 
-  const { capabilities, categories, clearAll: clearCapabilities, importCapabilities, setCategories } = useCapabilities(sessionCode ?? null)
+  const { capabilities, categories, clearAll: clearCapabilities, importCapabilities, importCategories } = useCapabilities(sessionCode ?? null)
   const { strategies, clearAll: clearStrategies, importStrategies } = useStrategies(sessionCode ?? null)
   const { gamePlans, importGamePlans } = useGamePlans(sessionCode ?? null)
   const { retroItems, retroColumns, retroTags, importRetro, clearAll: clearRetro } = useRetro(sessionCode ?? null)
@@ -171,7 +171,7 @@ export default function WorkspacePage() {
         await importGamePlans(result.gamePlans)
         await importStrategies(result.strategies)
         if (result.categories?.length) {
-          setCategories(result.categories)
+          await importCategories(result.categories)
         }
         if (result.retroItems?.length || result.retroColumns?.length) {
           await importRetro(result.retroItems, result.retroColumns, result.retroTags)

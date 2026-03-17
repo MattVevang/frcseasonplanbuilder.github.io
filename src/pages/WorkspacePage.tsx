@@ -14,6 +14,7 @@ import { useGamePlans } from '../hooks/useGamePlans'
 import { useFirebaseSync } from '../hooks/useFirebaseSync'
 import { useDemoData } from '../hooks/useDemoData'
 import { getSession, deleteSession } from '../services/sessionService'
+import { cleanupExpiredSessions } from '../services/cleanupService'
 import { validatePin } from '../utils/pinUtils'
 import { isFirebaseConfigured } from '../services/firebase'
 import { isDemoSession } from '../utils/demoUtils'
@@ -34,13 +35,20 @@ export default function WorkspacePage() {
   // Get PIN from URL
   const pin = searchParams.get('pin')
 
-  const { capabilities, clearAll: clearCapabilities, importCapabilities } = useCapabilities(sessionCode ?? null)
+  const { capabilities, categories, clearAll: clearCapabilities, importCapabilities, setCategories } = useCapabilities(sessionCode ?? null)
   const { strategies, clearAll: clearStrategies, importStrategies } = useStrategies(sessionCode ?? null)
   const { gamePlans, importGamePlans } = useGamePlans(sessionCode ?? null)
   const { isConnected, isLoading, isFirebaseEnabled, sessionNotFound, isDemoMode } = useFirebaseSync({ sessionCode: sessionCode ?? null })
 
   // Initialize demo data when in demo mode
   useDemoData(sessionCode ?? null)
+
+  // Run cleanup of expired sessions only for real (non-demo) sessions
+  useEffect(() => {
+    if (sessionCode && !isDemoSession(sessionCode) && isFirebaseConfigured()) {
+      cleanupExpiredSessions()
+    }
+  }, [sessionCode])
 
   // Validate PIN on mount
   useEffect(() => {
@@ -137,7 +145,7 @@ export default function WorkspacePage() {
   }
 
   const handleExport = () => {
-    exportData(sessionCode, capabilities, gamePlans, strategies)
+    exportData(sessionCode, capabilities, gamePlans, strategies, categories)
     toast.success('Data exported successfully!')
   }
 
@@ -151,10 +159,12 @@ export default function WorkspacePage() {
 
       try {
         const result = await importData(file)
-        // Import to Firebase (these functions sync to server if configured)
         await importCapabilities(result.capabilities)
         await importGamePlans(result.gamePlans)
         await importStrategies(result.strategies)
+        if (result.categories?.length) {
+          setCategories(result.categories)
+        }
         toast.success(`Imported ${result.capabilities.length} capabilities, ${result.gamePlans.length} game plans, and ${result.strategies.length} strategies`)
       } catch (err) {
         toast.error(err instanceof Error ? err.message : 'Failed to import data')

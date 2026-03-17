@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { GripVertical, Edit2, Trash2, ChevronUp, ChevronDown } from 'lucide-react'
-import { Capability, Priority, PRIORITY_CONFIG } from '../../types/capability'
+import { Capability, Priority, PRIORITY_CONFIG, CATEGORY_COLORS } from '../../types/capability'
 import { useCapabilities } from '../../hooks/useCapabilities'
 import ConfirmDialog from '../ui/ConfirmDialog'
 import { cn } from '../../utils/cn'
@@ -38,7 +38,7 @@ const priorityColors: Record<Priority, { bg: string; text: string }> = {
 
 export default function CapabilityItem({ capability, sessionCode, onEdit }: CapabilityItemProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
-  const { capabilities, deleteCapability, reorderCapabilities } = useCapabilities(sessionCode)
+  const { capabilities, deleteCapability, reorderCapabilities, categories } = useCapabilities(sessionCode)
 
   const {
     attributes,
@@ -85,6 +85,11 @@ export default function CapabilityItem({ capability, sessionCode, onEdit }: Capa
 
   const priorityStyle = priorityColors[capability.priority]
   const priorityLabel = PRIORITY_CONFIG[capability.priority].label
+
+  // Resolve category objects for display
+  const capCategories = (capability.categories || [])
+    .map((catId) => categories.find((c) => c.id === catId))
+    .filter(Boolean)
 
   return (
     <>
@@ -141,6 +146,26 @@ export default function CapabilityItem({ capability, sessionCode, onEdit }: Capa
                 <p className="mt-1 text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
                   {capability.description}
                 </p>
+              )}
+              {capCategories.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {capCategories.map((cat) => {
+                    const colorConfig = CATEGORY_COLORS[cat!.color]
+                    return (
+                      <span
+                        key={cat!.id}
+                        className={cn(
+                          'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium',
+                          colorConfig?.bg,
+                          colorConfig?.text
+                        )}
+                      >
+                        <span className={cn('w-1.5 h-1.5 rounded-full', colorConfig?.dot)} />
+                        {cat!.name}
+                      </span>
+                    )
+                  })}
+                </div>
               )}
             </div>
             <div className="flex-shrink-0 text-right">

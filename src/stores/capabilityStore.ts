@@ -1,10 +1,19 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { v4 as uuidv4 } from 'uuid'
-import { Capability, CapabilityFormData, SortField, SortDirection, PRIORITY_CONFIG } from '../types/capability'
+import { Capability, CapabilityCategory, CapabilityFormData, SortField, SortDirection, ViewMode, PRIORITY_CONFIG } from '../types/capability'
+
+function normalizeCapability(cap: Record<string, unknown>): Capability {
+  return {
+    ...(cap as unknown as Capability),
+    categories: Array.isArray(cap.categories) ? (cap.categories as string[]) : [],
+  }
+}
 
 interface CapabilityState {
   capabilities: Capability[]
+  categories: CapabilityCategory[]
+  viewMode: ViewMode
   sortField: SortField
   sortDirection: SortDirection
 
@@ -17,12 +26,24 @@ interface CapabilityState {
   getSortedCapabilities: () => Capability[]
   clearAll: () => void
   setCapabilities: (capabilities: Capability[]) => void
+
+  addCategory: (name: string, color: string) => void
+  updateCategory: (id: string, data: { name?: string; color?: string }) => void
+  deleteCategory: (id: string) => void
+  setCategories: (categories: CapabilityCategory[]) => void
+
+  addCategoryToCapability: (capabilityId: string, categoryId: string) => void
+  removeCategoryFromCapability: (capabilityId: string, categoryId: string) => void
+
+  setViewMode: (mode: ViewMode) => void
 }
 
 export const useCapabilityStore = create<CapabilityState>()(
   persist(
     (set, get) => ({
       capabilities: [],
+      categories: [],
+      viewMode: 'list',
       sortField: 'rank',
       sortDirection: 'asc',
 
@@ -32,6 +53,7 @@ export const useCapabilityStore = create<CapabilityState>()(
           id: uuidv4(),
           rank: capabilities.length + 1,
           ...data,
+          categories: data.categories || [],
           createdAt: new Date(),
           updatedAt: new Date(),
         }
@@ -48,7 +70,6 @@ export const useCapabilityStore = create<CapabilityState>()(
 
       deleteCapability: (id) => {
         const capabilities = get().capabilities.filter((c) => c.id !== id)
-        // Reindex ranks
         const reindexed = capabilities.map((c, index) => ({
           ...c,
           rank: index + 1,
@@ -66,7 +87,6 @@ export const useCapabilityStore = create<CapabilityState>()(
         const [removed] = capabilities.splice(activeIndex, 1)
         capabilities.splice(overIndex, 0, removed!)
 
-        // Update ranks
         const reindexed = capabilities.map((c, index) => ({
           ...c,
           rank: index + 1,
@@ -82,9 +102,6 @@ export const useCapabilityStore = create<CapabilityState>()(
         const { sortDirection } = get()
         const newDirection =
           get().sortField === field && sortDirection === 'asc' ? 'desc' : 'asc'
-
-        // Only update the sort field and direction - don't modify the capabilities array
-        // The sorted view will be computed when displaying
         set({
           sortField: field,
           sortDirection: newDirection,
@@ -115,13 +132,67 @@ export const useCapabilityStore = create<CapabilityState>()(
       },
 
       setCapabilities: (capabilities) => {
-        set({ capabilities })
+        set({ capabilities: capabilities.map(c => normalizeCapability(c as unknown as Record<string, unknown>)) })
+      },
+
+      addCategory: (name, color) => {
+        const newCategory: CapabilityCategory = { id: uuidv4(), name, color }
+        set({ categories: [...get().categories, newCategory] })
+      },
+
+      updateCategory: (id, data) => {
+        set({
+          categories: get().categories.map((c) =>
+            c.id === id ? { ...c, ...data } : c
+          ),
+        })
+      },
+
+      deleteCategory: (id) => {
+        const capabilities = get().capabilities.map((cap) => ({
+          ...cap,
+          categories: cap.categories.filter((catId) => catId !== id),
+        }))
+        set({
+          categories: get().categories.filter((c) => c.id !== id),
+          capabilities,
+        })
+      },
+
+      setCategories: (categories) => {
+        set({ categories })
+      },
+
+      addCategoryToCapability: (capabilityId, categoryId) => {
+        set({
+          capabilities: get().capabilities.map((cap) =>
+            cap.id === capabilityId && !cap.categories.includes(categoryId)
+              ? { ...cap, categories: [...cap.categories, categoryId], updatedAt: new Date() }
+              : cap
+          ),
+        })
+      },
+
+      removeCategoryFromCapability: (capabilityId, categoryId) => {
+        set({
+          capabilities: get().capabilities.map((cap) =>
+            cap.id === capabilityId
+              ? { ...cap, categories: cap.categories.filter((id) => id !== categoryId), updatedAt: new Date() }
+              : cap
+          ),
+        })
+      },
+
+      setViewMode: (mode) => {
+        set({ viewMode: mode })
       },
     }),
     {
       name: 'frc-capabilities',
       partialize: (state) => ({
         capabilities: state.capabilities,
+        categories: state.categories,
+        viewMode: state.viewMode,
         sortField: state.sortField,
         sortDirection: state.sortDirection,
       }),

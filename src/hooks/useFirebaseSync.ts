@@ -92,6 +92,7 @@ export function useFirebaseSync({ sessionCode: rawSessionCode }: UseFirebaseSync
               title: data.title,
               description: data.description,
               priority: data.priority || 'medium',
+              categories: data.categories || [],
               createdAt: data.createdAt?.toDate() || new Date(),
               updatedAt: data.updatedAt?.toDate() || new Date(),
             }

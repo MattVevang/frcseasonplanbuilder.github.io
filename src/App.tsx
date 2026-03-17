@@ -1,7 +1,6 @@
 import { useEffect } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import { useThemeStore } from './stores/themeStore'
-import { cleanupExpiredSessions } from './services/cleanupService'
 import Layout from './components/layout/Layout'
 import HomePage from './pages/HomePage'
 import WorkspacePage from './pages/WorkspacePage'
@@ -16,11 +15,6 @@ function App() {
       document.documentElement.classList.remove('dark')
     }
   }, [isDark])
-
-  // Run cleanup of expired sessions on app load
-  useEffect(() => {
-    cleanupExpiredSessions()
-  }, [])
 
   return (
     <Layout>

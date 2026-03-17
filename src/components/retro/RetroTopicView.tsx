@@ -298,9 +298,6 @@ export default function RetroTopicView({
 
         {/* Topic sections */}
         {sections.map((section) => {
-          const hasAnyItems = section.columns.some((c) => c.items.length > 0)
-          if (!hasAnyItems) return null
-
           return (
             <div
               key={section.tag || '__untagged__'}

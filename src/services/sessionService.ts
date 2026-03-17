@@ -43,7 +43,7 @@ export async function createSession(sessionCode: string, pinHash: string): Promi
 
   const now = new Date()
   const expiresAt = new Date()
-  expiresAt.setDate(expiresAt.getDate() + 30) // 30 days from now
+  expiresAt.setDate(expiresAt.getDate() + 120) // 120 days from now
 
   const session: Session = {
     sessionCode,
@@ -89,7 +89,7 @@ export async function refreshSessionExpiry(sessionCode: string): Promise<void> {
   if (!db) return
 
   const expiresAt = new Date()
-  expiresAt.setDate(expiresAt.getDate() + 30)
+  expiresAt.setDate(expiresAt.getDate() + 120)
 
   const sessionRef = doc(db, 'sessions', sessionCode)
   await updateDoc(sessionRef, {

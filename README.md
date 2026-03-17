@@ -20,7 +20,7 @@ A collaborative pre-season planning website for FRC/FTC robotics teams to track 
 - Create sessions using your team number or custom code
 - Share the session code with teammates for real-time collaboration
 - Data syncs automatically across all connected users
-- Sessions are cached for 30 days
+- Sessions are cached for 120 days
 
 ### Data Management
 - Export your plan to JSON for backup
@@ -101,7 +101,7 @@ service cloud.firestore {
 }
 ```
 
-5. Set up TTL policy for automatic 30-day cleanup on the `expiresAt` field
+5. Set up TTL policy for automatic 120-day cleanup on the `expiresAt` field
 
 ## Deployment
 

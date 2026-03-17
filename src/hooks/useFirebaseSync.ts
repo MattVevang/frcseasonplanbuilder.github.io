@@ -4,8 +4,10 @@ import { getFirebaseDb, isFirebaseConfigured } from '../services/firebase'
 import { getSessionAndRefresh } from '../services/sessionService'
 import { useCapabilityStore } from '../stores/capabilityStore'
 import { useStrategyStore } from '../stores/strategyStore'
+import { useRetroStore } from '../stores/retroStore'
 import { Capability } from '../types/capability'
 import { Strategy, GamePlan } from '../types/strategy'
+import { RetroItem, RetroColumn } from '../types/retrospective'
 import { isDemoSession } from '../utils/demoUtils'
 import toast from 'react-hot-toast'
 
@@ -27,6 +29,8 @@ export function useFirebaseSync({ sessionCode: rawSessionCode }: UseFirebaseSync
   const setCapabilities = useCapabilityStore((s) => s.setCapabilities)
   const setStrategies = useStrategyStore((s) => s.setStrategies)
   const setGamePlans = useStrategyStore((s) => s.setGamePlans)
+  const setRetroItems = useRetroStore((s) => s.setRetroItems)
+  const setRetroColumns = useRetroStore((s) => s.setRetroColumns)
 
   const loadRemoteData = useCallback(() => {
     setHasRemoteUpdate(false)
@@ -54,6 +58,8 @@ export function useFirebaseSync({ sessionCode: rawSessionCode }: UseFirebaseSync
     let unsubCapabilities: (() => void) | null = null
     let unsubStrategies: (() => void) | null = null
     let unsubGamePlans: (() => void) | null = null
+    let unsubRetroItems: (() => void) | null = null
+    let unsubRetroColumns: (() => void) | null = null
 
     const setupListeners = async () => {
       try {
@@ -149,6 +155,48 @@ export function useFirebaseSync({ sessionCode: rawSessionCode }: UseFirebaseSync
           })
           setStrategies(strategies)
         })
+
+        // Listen to retro items
+        const retroItemsQuery = query(
+          collection(db, 'sessions', sessionCode, 'retroItems'),
+          orderBy('createdAt', 'asc')
+        )
+        unsubRetroItems = onSnapshot(retroItemsQuery, (snapshot) => {
+          const items: RetroItem[] = snapshot.docs.map((d) => {
+            const data = d.data()
+            return {
+              id: d.id,
+              columnId: data.columnId || '',
+              title: data.title || '',
+              description: data.description || '',
+              tags: data.tags || [],
+              voterIds: data.voterIds || [],
+              createdAt: data.createdAt?.toDate() || new Date(),
+              updatedAt: data.updatedAt?.toDate() || new Date(),
+            }
+          })
+          setRetroItems(items)
+        })
+
+        // Listen to retro columns
+        const retroColumnsQuery = query(
+          collection(db, 'sessions', sessionCode, 'retroColumns'),
+          orderBy('order', 'asc')
+        )
+        unsubRetroColumns = onSnapshot(retroColumnsQuery, (snapshot) => {
+          const columns: RetroColumn[] = snapshot.docs.map((d) => {
+            const data = d.data()
+            return {
+              id: d.id,
+              name: data.name || '',
+              color: data.color || 'blue',
+              order: data.order ?? 0,
+              createdAt: data.createdAt?.toDate() || new Date(),
+              updatedAt: data.updatedAt?.toDate() || new Date(),
+            }
+          })
+          setRetroColumns(columns)
+        })
       } catch (error) {
         console.error('Firebase sync error:', error)
         toast.error('Failed to connect to server. Working in offline mode.')
@@ -164,8 +212,10 @@ export function useFirebaseSync({ sessionCode: rawSessionCode }: UseFirebaseSync
       unsubCapabilities?.()
       unsubStrategies?.()
       unsubGamePlans?.()
+      unsubRetroItems?.()
+      unsubRetroColumns?.()
     }
-  }, [sessionCode, setCapabilities, setStrategies, setGamePlans])
+  }, [sessionCode, setCapabilities, setStrategies, setGamePlans, setRetroItems, setRetroColumns])
 
   return {
     isConnected,

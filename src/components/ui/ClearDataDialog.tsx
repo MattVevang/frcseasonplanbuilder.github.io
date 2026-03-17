@@ -8,10 +8,12 @@ interface ClearDataDialogProps {
   onConfirm: (options: {
     clearCapabilities: boolean
     clearStrategies: boolean
+    clearRetro: boolean
     deleteSession: boolean
   }) => void
   capabilityCount: number
   strategyCount: number
+  retroItemCount: number
   isFirebaseEnabled: boolean
   isDemoMode?: boolean
 }
@@ -22,11 +24,13 @@ export default function ClearDataDialog({
   onConfirm,
   capabilityCount,
   strategyCount,
+  retroItemCount,
   isFirebaseEnabled,
   isDemoMode = false,
 }: ClearDataDialogProps) {
   const [clearCapabilities, setClearCapabilities] = useState(false)
   const [clearStrategies, setClearStrategies] = useState(false)
+  const [clearRetro, setClearRetro] = useState(false)
   const [deleteSession, setDeleteSession] = useState(false)
 
   // Reset checkboxes when dialog opens
@@ -34,20 +38,23 @@ export default function ClearDataDialog({
     if (isOpen) {
       setClearCapabilities(false)
       setClearStrategies(false)
+      setClearRetro(false)
       setDeleteSession(false)
     }
   }, [isOpen])
 
   if (!isOpen) return null
 
-  const nothingSelected = !clearCapabilities && !clearStrategies && !deleteSession
+  const nothingSelected = !clearCapabilities && !clearStrategies && !clearRetro && !deleteSession
   const hasCapabilities = capabilityCount > 0
   const hasStrategies = strategyCount > 0
+  const hasRetro = retroItemCount > 0
 
   const handleConfirm = () => {
     onConfirm({
       clearCapabilities,
       clearStrategies,
+      clearRetro,
       deleteSession,
     })
   }
@@ -107,6 +114,25 @@ export default function ClearDataDialog({
             />
             <span className={`text-sm ${!hasStrategies ? 'text-gray-400' : ''}`}>
               Match Strategies ({strategyCount} {strategyCount === 1 ? 'item' : 'items'} across all game plans)
+            </span>
+          </label>
+
+          <label
+            className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${
+              hasRetro
+                ? 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer'
+                : 'border-gray-100 dark:border-gray-800 opacity-50 cursor-not-allowed'
+            }`}
+          >
+            <input
+              type="checkbox"
+              checked={clearRetro}
+              onChange={(e) => setClearRetro(e.target.checked)}
+              disabled={!hasRetro}
+              className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 disabled:opacity-50"
+            />
+            <span className={`text-sm ${!hasRetro ? 'text-gray-400' : ''}`}>
+              Retrospective ({retroItemCount} {retroItemCount === 1 ? 'item' : 'items'}, columns &amp; tags)
             </span>
           </label>
 

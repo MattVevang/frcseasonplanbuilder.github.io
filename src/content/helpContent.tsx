@@ -54,7 +54,7 @@ export const overviewHelp: HelpSection = {
       <section>
         <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Data retention & backups</h3>
         <p className="text-gray-600 dark:text-gray-300 mb-2">
-          Session data is automatically deleted after 30 days of inactivity. To preserve your work:
+          Session data is automatically deleted after 120 days of inactivity. To preserve your work:
         </p>
         <ul className="list-disc list-inside text-gray-600 dark:text-gray-300 space-y-1">
           <li><strong>Export</strong> saves your entire plan as a JSON file to your computer</li>
@@ -88,6 +88,28 @@ export const capabilitiesHelp: HelpSection = {
           <li><span className="font-medium text-yellow-600 dark:text-yellow-400">Medium</span> — Important but can wait if needed</li>
           <li><span className="font-medium text-blue-600 dark:text-blue-400">Low</span> — Nice to have if time permits</li>
           <li><span className="font-medium text-gray-600 dark:text-gray-400">Very Low</span> — Stretch goal or future consideration</li>
+        </ul>
+      </section>
+
+      <section>
+        <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Categories &amp; subsystems</h3>
+        <p className="text-gray-600 dark:text-gray-300 mb-2">
+          Capabilities can be tagged with one or more categories (e.g. Drivetrain, Intake, Autonomous) to organize them by subsystem. A single capability can belong to multiple categories—for example, a "drive to scoring position" capability might belong to both Drivetrain and Autonomous.
+        </p>
+        <ul className="list-disc list-inside text-gray-600 dark:text-gray-300 space-y-1">
+          <li>Click <strong>Categories</strong> to manage your category list (add, rename, recolor, or delete)</li>
+          <li>Assign categories when adding or editing a capability</li>
+        </ul>
+      </section>
+
+      <section>
+        <h3 className="font-semibold text-gray-900 dark:text-white mb-2">List &amp; Board views</h3>
+        <p className="text-gray-600 dark:text-gray-300 mb-2">
+          Two ways to view your capabilities:
+        </p>
+        <ul className="list-disc list-inside text-gray-600 dark:text-gray-300 space-y-1">
+          <li><strong>List view</strong> — A flat ranked list sorted by priority and rank. Drag and drop to reorder.</li>
+          <li><strong>Board view</strong> — A swimlane board grouped by category. Drag items between categories to reassign them, or drag within a category to reorder.</li>
         </ul>
       </section>
 
@@ -159,6 +181,88 @@ export const strategyHelp: HelpSection = {
         <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Defensive strategies</h3>
         <p className="text-gray-600 dark:text-gray-300">
           Mark strategies as "defensive" if they don't directly score points (like blocking opponents). These are tracked separately and won't affect your score projection, but they still contribute to your time budget.
+        </p>
+      </section>
+    </div>
+  ),
+}
+
+export const retroHelp: HelpSection = {
+  title: 'Retrospective Board',
+  content: (
+    <div className="space-y-4">
+      <section>
+        <h3 className="font-semibold text-gray-900 dark:text-white mb-2">What is a retrospective?</h3>
+        <p className="text-gray-600 dark:text-gray-300">
+          A retrospective lets your team reflect on what went well, what needs improvement, and what actions to take next. It's a collaborative board where everyone can contribute items and vote on the ones they agree with most.
+        </p>
+      </section>
+
+      <section>
+        <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Two ways to view your retro</h3>
+        <p className="text-gray-600 dark:text-gray-300 mb-2">
+          Use the view toggle in the top-right of the toolbar to switch between two layouts. Both views show the exact same data—switching is instant and safe.
+        </p>
+        <ul className="list-disc list-inside text-gray-600 dark:text-gray-300 space-y-1">
+          <li><strong>Column view</strong> — Groups items by sentiment (What Went Well, What Needs Improvement, etc.). Best for general retros and collecting broad feedback.</li>
+          <li><strong>Topic view</strong> — Groups items by subsystem/topic (e.g. Drivetrain, Intake, Shooter). Within each topic, items are split into sentiment columns. Best for engineering-focused retros where you want to see each subsystem's strengths and weaknesses side by side.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Columns (sentiments)</h3>
+        <p className="text-gray-600 dark:text-gray-300 mb-2">
+          Columns represent the sentiment or purpose of an item. The board starts with three defaults, but you can customize them:
+        </p>
+        <ul className="list-disc list-inside text-gray-600 dark:text-gray-300 space-y-1">
+          <li><strong>What Went Well</strong> — Successes and strengths to keep doing</li>
+          <li><strong>What Needs Improvement</strong> — Pain points and challenges to address</li>
+          <li><strong>Action Items</strong> — Concrete next steps the team will take</li>
+        </ul>
+        <p className="text-gray-600 dark:text-gray-300 mt-2">
+          Click the <strong>Columns</strong> button (labeled <strong>Sentiments</strong> in Topic view) to add, rename, recolor, or delete columns. Columns can only be deleted when they have no items.
+        </p>
+      </section>
+
+      <section>
+        <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Tags &amp; topics</h3>
+        <p className="text-gray-600 dark:text-gray-300 mb-2">
+          Tags and topics are the same thing—just viewed differently depending on which layout you're using:
+        </p>
+        <ul className="list-disc list-inside text-gray-600 dark:text-gray-300 space-y-1">
+          <li>In <strong>Column view</strong>, they're called <strong>tags</strong> and appear as colored pills on each item. Use them to link related items across columns—click a tag to filter the board to only items with that tag.</li>
+          <li>In <strong>Topic view</strong>, they're called <strong>topics</strong> and become the row headings (e.g. Drivetrain, Intake). Each topic section shows all its items split across sentiment columns.</li>
+        </ul>
+        <p className="text-gray-600 dark:text-gray-300 mt-2">
+          Click the <strong>Tags</strong> button (labeled <strong>Topics</strong> in Topic view) to manage your tag list. You can add multiple at once by separating with commas (e.g. "drivetrain, intake, shooter"). An item can have multiple tags—it will appear in each topic section it belongs to.
+        </p>
+      </section>
+
+      <section>
+        <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Adding &amp; editing items</h3>
+        <p className="text-gray-600 dark:text-gray-300">
+          Click <strong>Add Item</strong> or the <strong>+</strong> button on a column header. Each item has a title, optional description, a column assignment (the sentiment), and optional tags. You can edit or delete items by hovering over them and clicking the pencil or trash icons.
+        </p>
+      </section>
+
+      <section>
+        <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Voting</h3>
+        <p className="text-gray-600 dark:text-gray-300">
+          Click the thumbs-up button on any item to upvote it. Click again to remove your vote. Each person can only vote once per item—no spamming! Items are automatically sorted by vote count so the most popular items rise to the top.
+        </p>
+      </section>
+
+      <section>
+        <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Collaborative use</h3>
+        <p className="text-gray-600 dark:text-gray-300">
+          Everyone in the same session sees the same board. Share the QR code so the whole team can add items and vote simultaneously from their own devices. Instead of duplicating ideas, upvote ones you agree with!
+        </p>
+      </section>
+
+      <section>
+        <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Export &amp; use elsewhere</h3>
+        <p className="text-gray-600 dark:text-gray-300">
+          Use the Export button to save your full session data (including the retro board) as JSON. You can then use this to create issues, tickets, or action items in your team's project tracker (GitHub Issues, Jira, Azure DevOps, etc.). Importing a backup restores all retro data including items, columns, tags, and vote counts.
         </p>
       </section>
     </div>

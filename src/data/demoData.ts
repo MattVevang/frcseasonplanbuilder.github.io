@@ -1,5 +1,6 @@
 import { Capability, CapabilityCategory, Priority } from '../types/capability'
 import { Strategy, GamePlan, MatchPhase } from '../types/strategy'
+import { RetroItem, RetroColumn } from '../types/retrospective'
 
 // Helper to create timestamps
 const now = new Date()
@@ -642,6 +643,114 @@ const consistentStrategies2026: Strategy[] = [
 
 // Combined 2026 strategies
 export const demoStrategies2026: Strategy[] = [...highCycleStrategies2026, ...consistentStrategies2026]
+
+// ============================================
+// Retrospective Demo Data
+// ============================================
+
+export const demoRetroColumns: RetroColumn[] = [
+  { id: 'demo-retro-col-well', name: 'What Went Well', color: 'green', order: 0, createdAt: now, updatedAt: now },
+  { id: 'demo-retro-col-improve', name: 'What Needs Improvement', color: 'orange', order: 1, createdAt: now, updatedAt: now },
+  { id: 'demo-retro-col-action', name: 'Action Items', color: 'blue', order: 2, createdAt: now, updatedAt: now },
+]
+
+export const demoRetroTags: string[] = [
+  'autonomous', 'drivetrain', 'electrical', 'intake', 'logistics',
+  'mechanical', 'programming', 'scouting', 'strategy',
+]
+
+export const demoRetroItems: RetroItem[] = [
+  {
+    id: 'demo-retro-1',
+    columnId: 'demo-retro-col-well',
+    title: 'Swerve drive was very reliable',
+    description: 'Zero mechanical failures on the drivetrain throughout the entire event. The pre-season testing paid off.',
+    tags: ['drivetrain', 'mechanical'],
+    voterIds: ['voter-a', 'voter-b', 'voter-c', 'voter-d', 'voter-e'],
+    createdAt: now,
+    updatedAt: now,
+  },
+  {
+    id: 'demo-retro-2',
+    columnId: 'demo-retro-col-well',
+    title: 'Autonomous scoring consistency',
+    description: 'Our 3-piece auto routine hit 90%+ success rate in quals. Path planning tuning sessions were worth it.',
+    tags: ['autonomous', 'programming'],
+    voterIds: ['voter-a', 'voter-c', 'voter-f'],
+    createdAt: now,
+    updatedAt: now,
+  },
+  {
+    id: 'demo-retro-3',
+    columnId: 'demo-retro-col-well',
+    title: 'Driver practice schedule worked great',
+    description: 'Having dedicated driver practice 3x/week leading up to comp made a huge difference.',
+    tags: ['strategy'],
+    voterIds: ['voter-b', 'voter-d'],
+    createdAt: now,
+    updatedAt: now,
+  },
+  {
+    id: 'demo-retro-4',
+    columnId: 'demo-retro-col-improve',
+    title: 'Intake jams under defense',
+    description: 'When defenders pushed us, the intake would jam about 30% of the time. Need better compliance in the mechanism.',
+    tags: ['intake', 'mechanical'],
+    voterIds: ['voter-a', 'voter-b', 'voter-c', 'voter-d', 'voter-e', 'voter-f', 'voter-g'],
+    createdAt: now,
+    updatedAt: now,
+  },
+  {
+    id: 'demo-retro-5',
+    columnId: 'demo-retro-col-improve',
+    title: 'Scouting data entry was too slow',
+    description: 'Our paper-based scouting took too long to digitize between matches. Need a tablet-based solution.',
+    tags: ['scouting', 'strategy'],
+    voterIds: ['voter-c', 'voter-e', 'voter-f'],
+    createdAt: now,
+    updatedAt: now,
+  },
+  {
+    id: 'demo-retro-6',
+    columnId: 'demo-retro-col-improve',
+    title: 'Battery management needs work',
+    description: 'Ran a low battery in Q22 because of poor tracking. Almost brownout during endgame.',
+    tags: ['electrical', 'logistics'],
+    voterIds: ['voter-a', 'voter-g'],
+    createdAt: now,
+    updatedAt: now,
+  },
+  {
+    id: 'demo-retro-7',
+    columnId: 'demo-retro-col-action',
+    title: 'Redesign intake compliance for Worlds',
+    description: 'Add spring-loaded pivot to intake arms so they flex under impact instead of jamming.',
+    tags: ['intake', 'mechanical'],
+    voterIds: ['voter-a', 'voter-b', 'voter-c', 'voter-d'],
+    createdAt: now,
+    updatedAt: now,
+  },
+  {
+    id: 'demo-retro-8',
+    columnId: 'demo-retro-col-action',
+    title: 'Build tablet scouting app',
+    description: 'Programming sub-team to build a simple web form for match scouting with auto-export to spreadsheet.',
+    tags: ['scouting', 'programming'],
+    voterIds: ['voter-e', 'voter-f'],
+    createdAt: now,
+    updatedAt: now,
+  },
+  {
+    id: 'demo-retro-9',
+    columnId: 'demo-retro-col-action',
+    title: 'Battery labeling and rotation system',
+    description: 'Number all batteries, create a checkout sheet, enforce 2-match cooldown rotation.',
+    tags: ['electrical', 'logistics'],
+    voterIds: ['voter-a'],
+    createdAt: now,
+    updatedAt: now,
+  },
+]
 
 // ============================================
 // Default Exports (2026 for new sessions)

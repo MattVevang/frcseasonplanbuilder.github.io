@@ -369,7 +369,7 @@ export default function SwimlaneBoardView({
     }
   }
 
-  if (categories.length === 0) {
+  if (categories.length === 0 && capabilities.length === 0) {
     return (
       <div className="text-center py-12 text-gray-500 dark:text-gray-400">
         <p className="text-sm font-medium">No categories defined yet</p>

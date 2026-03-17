@@ -10,19 +10,23 @@ import {
   useSensor,
   useSensors,
   closestCenter,
+  pointerWithin,
   type CollisionDetection,
 } from '@dnd-kit/core'
 import { Edit2, ChevronUp, ChevronDown, GripVertical } from 'lucide-react'
 import { Capability, CapabilityCategory, Priority, PRIORITY_CONFIG, CATEGORY_COLORS } from '../../types/capability'
 import { cn } from '../../utils/cn'
 
-// Prefer card droppables (ID contains "::") over column droppables.
-// Without this, closestCenter can pick the column when dragging downward,
-// causing within-column reorder to silently fail.
-const cardFirstCollision: CollisionDetection = (args) => {
-  const collisions = closestCenter(args)
-  const cardHits = collisions.filter((c) => String(c.id).includes('::'))
-  return cardHits.length > 0 ? cardHits : collisions
+// Use pointerWithin to detect which column the cursor is in, then prefer
+// card droppables within that column for precise reordering.  Falls back to
+// closestCenter when the pointer isn't inside any droppable (edge of screen).
+const kanbanCollision: CollisionDetection = (args) => {
+  const pointerCollisions = pointerWithin(args)
+  if (pointerCollisions.length > 0) {
+    const cardHits = pointerCollisions.filter((c) => String(c.id).includes('::'))
+    return cardHits.length > 0 ? cardHits : pointerCollisions
+  }
+  return closestCenter(args)
 }
 
 interface SwimlaneBoardViewProps {
@@ -369,7 +373,7 @@ export default function SwimlaneBoardView({
     }
   }
 
-  if (categories.length === 0) {
+  if (categories.length === 0 && capabilities.length === 0) {
     return (
       <div className="text-center py-12 text-gray-500 dark:text-gray-400">
         <p className="text-sm font-medium">No categories defined yet</p>
@@ -384,7 +388,7 @@ export default function SwimlaneBoardView({
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={cardFirstCollision}
+      collisionDetection={kanbanCollision}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >

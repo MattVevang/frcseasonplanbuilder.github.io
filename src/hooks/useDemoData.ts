@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { isDemoSession } from '../utils/demoUtils'
-import { demoCapabilities, demoStrategies, demoGamePlans } from '../data/demoData'
+import { demoCapabilities, demoStrategies, demoGamePlans, demoCategories } from '../data/demoData'
 import { useCapabilityStore } from '../stores/capabilityStore'
 import { useStrategyStore } from '../stores/strategyStore'
 
@@ -12,6 +12,7 @@ import { useStrategyStore } from '../stores/strategyStore'
 export function useDemoData(sessionCode: string | null) {
   const initialized = useRef(false)
   const setCapabilities = useCapabilityStore((s) => s.setCapabilities)
+  const setCategories = useCapabilityStore((s) => s.setCategories)
   const setStrategies = useStrategyStore((s) => s.setStrategies)
   const setGamePlans = useStrategyStore((s) => s.setGamePlans)
 
@@ -19,11 +20,12 @@ export function useDemoData(sessionCode: string | null) {
     if (isDemoSession(sessionCode) && !initialized.current) {
       // Load demo data into stores
       setCapabilities(demoCapabilities)
+      setCategories(demoCategories)
       setGamePlans(demoGamePlans)
       setStrategies(demoStrategies)
       initialized.current = true
     }
-  }, [sessionCode, setCapabilities, setStrategies, setGamePlans])
+  }, [sessionCode, setCapabilities, setCategories, setStrategies, setGamePlans])
 
   // Reset initialization flag when leaving demo mode
   useEffect(() => {

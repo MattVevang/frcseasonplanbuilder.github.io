@@ -36,6 +36,7 @@ export async function getCapabilities(sessionCode: string): Promise<Capability[]
       title: data.title,
       description: data.description,
       priority: data.priority || 'medium',
+      categories: data.categories || [],
       createdAt: data.createdAt?.toDate() || new Date(),
       updatedAt: data.updatedAt?.toDate() || new Date(),
     }
@@ -67,6 +68,7 @@ export async function addCapability(
     title: data.title,
     description: data.description,
     priority: data.priority,
+    categories: data.categories || [],
     createdAt: Timestamp.fromDate(now),
     updatedAt: Timestamp.fromDate(now),
   })
@@ -161,6 +163,7 @@ export async function importCapabilities(
       title: cap.title,
       description: cap.description,
       priority: cap.priority,
+      categories: cap.categories || [],
       createdAt: Timestamp.fromDate(cap.createdAt instanceof Date ? cap.createdAt : new Date(cap.createdAt)),
       updatedAt: Timestamp.fromDate(new Date()),
     })

@@ -1,37 +1,42 @@
-import { Capability } from '../types/capability'
+import { Capability, CapabilityCategory } from '../types/capability'
 import { Strategy, GamePlan } from '../types/strategy'
 
 interface ExportData {
-  version: '3.0'
+  version: '4.0'
   exportedAt: string
   sessionCode: string
   capabilities: Capability[]
   gamePlans: GamePlan[]
   strategies: Strategy[]
+  categories: CapabilityCategory[]
 }
 
 // Support for older versions
 interface LegacyExportData {
-  version: '2.0' | string
+  version: '2.0' | '3.0' | string
   exportedAt: string
   sessionCode: string
   capabilities: Capability[]
+  gamePlans?: GamePlan[]
   strategies: Strategy[]
+  categories?: CapabilityCategory[]
 }
 
 export function exportData(
   sessionCode: string,
   capabilities: Capability[],
   gamePlans: GamePlan[],
-  strategies: Strategy[]
+  strategies: Strategy[],
+  categories: CapabilityCategory[]
 ): void {
   const data: ExportData = {
-    version: '3.0',
+    version: '4.0',
     exportedAt: new Date().toISOString(),
     sessionCode,
     capabilities,
     gamePlans,
     strategies,
+    categories,
   }
 
   const blob = new Blob([JSON.stringify(data, null, 2)], {
@@ -47,7 +52,7 @@ export function exportData(
 
 export async function importData(
   file: File
-): Promise<{ capabilities: Capability[]; gamePlans: GamePlan[]; strategies: Strategy[] }> {
+): Promise<{ capabilities: Capability[]; gamePlans: GamePlan[]; strategies: Strategy[]; categories: CapabilityCategory[] }> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
 
@@ -60,15 +65,33 @@ export async function importData(
           throw new Error('Invalid file format')
         }
 
-        // Validate capabilities
+        // Validate capabilities (ensure categories field exists)
         const capabilities = rawData.capabilities.map((c: Capability) => ({
           ...c,
+          categories: c.categories || [],
           createdAt: new Date(c.createdAt),
           updatedAt: new Date(c.updatedAt),
         }))
 
-        // Handle v3.0 with game plans
-        if (rawData.version === '3.0' && rawData.gamePlans) {
+        // Handle v4.0 with categories
+        if (rawData.version === '4.0') {
+          const gamePlans = (rawData.gamePlans || []).map((gp: GamePlan) => ({
+            ...gp,
+            createdAt: new Date(gp.createdAt),
+            updatedAt: new Date(gp.updatedAt),
+          }))
+
+          const strategies = (rawData.strategies || []).map((s: Strategy) => ({
+            ...s,
+            createdAt: new Date(s.createdAt),
+            updatedAt: new Date(s.updatedAt),
+          }))
+
+          const categories: CapabilityCategory[] = rawData.categories || []
+
+          resolve({ capabilities, gamePlans, strategies, categories })
+        } else if (rawData.version === '3.0' && rawData.gamePlans) {
+          // Handle v3.0 with game plans but no categories
           const gamePlans = rawData.gamePlans.map((gp: GamePlan) => ({
             ...gp,
             createdAt: new Date(gp.createdAt),
@@ -81,9 +104,9 @@ export async function importData(
             updatedAt: new Date(s.updatedAt),
           }))
 
-          resolve({ capabilities, gamePlans, strategies })
+          resolve({ capabilities, gamePlans, strategies, categories: [] })
         } else {
-          // Handle legacy v2.0 format - create a default game plan
+          // Handle legacy v2.0 format
           const legacyData = rawData as LegacyExportData
 
           if (!legacyData.strategies) {
@@ -98,7 +121,6 @@ export async function importData(
             updatedAt: new Date(),
           }
 
-          // Assign all strategies to the default game plan
           const strategies = legacyData.strategies.map((s) => ({
             ...s,
             gamePlanId: defaultGamePlan.id,
@@ -110,6 +132,7 @@ export async function importData(
             capabilities,
             gamePlans: [defaultGamePlan],
             strategies,
+            categories: [],
           })
         }
       } catch {

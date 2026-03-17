@@ -7,10 +7,11 @@ import * as capabilityService from '../services/capabilityService'
 import toast from 'react-hot-toast'
 
 export function useCapabilities(rawSessionCode: string | null) {
-  // Normalize session code to lowercase for case-insensitive matching
   const sessionCode = rawSessionCode?.toLowerCase() ?? null
 
   const rawCapabilities = useCapabilityStore((s) => s.capabilities)
+  const categories = useCapabilityStore((s) => s.categories)
+  const viewMode = useCapabilityStore((s) => s.viewMode)
   const sortField = useCapabilityStore((s) => s.sortField)
   const sortDirection = useCapabilityStore((s) => s.sortDirection)
   const localAdd = useCapabilityStore((s) => s.addCapability)
@@ -21,7 +22,14 @@ export function useCapabilities(rawSessionCode: string | null) {
   const setCapabilities = useCapabilityStore((s) => s.setCapabilities)
   const localSortByField = useCapabilityStore((s) => s.sortByField)
 
-  // Compute sorted capabilities - useMemo ensures re-render when dependencies change
+  const localAddCategory = useCapabilityStore((s) => s.addCategory)
+  const localUpdateCategory = useCapabilityStore((s) => s.updateCategory)
+  const localDeleteCategory = useCapabilityStore((s) => s.deleteCategory)
+  const setCategories = useCapabilityStore((s) => s.setCategories)
+  const localAddCategoryToCap = useCapabilityStore((s) => s.addCategoryToCapability)
+  const localRemoveCategoryFromCap = useCapabilityStore((s) => s.removeCategoryFromCapability)
+  const setViewMode = useCapabilityStore((s) => s.setViewMode)
+
   const capabilities = useMemo(() => {
     return [...rawCapabilities].sort((a, b) => {
       let comparison = 0
@@ -30,7 +38,6 @@ export function useCapabilities(rawSessionCode: string | null) {
           comparison = a.rank - b.rank
           break
         case 'priority':
-          // Sort by priority weight (higher weight = higher priority)
           comparison = PRIORITY_CONFIG[a.priority].weight - PRIORITY_CONFIG[b.priority].weight
           break
         case 'title':
@@ -64,7 +71,6 @@ export function useCapabilities(rawSessionCode: string | null) {
 
   const updateCapability = useCallback(
     async (id: string, data: Partial<CapabilityFormData>) => {
-      // Optimistic update
       localUpdate(id, data)
 
       if (sessionCode && isFirebaseConfigured() && !isDemoSession(sessionCode)) {
@@ -81,7 +87,6 @@ export function useCapabilities(rawSessionCode: string | null) {
 
   const deleteCapability = useCallback(
     async (id: string) => {
-      // Optimistic update
       localDelete(id)
 
       if (sessionCode && isFirebaseConfigured() && !isDemoSession(sessionCode)) {
@@ -98,7 +103,6 @@ export function useCapabilities(rawSessionCode: string | null) {
 
   const reorderCapabilities = useCallback(
     async (activeId: string, overId: string) => {
-      // Optimistic update
       localReorder(activeId, overId)
 
       if (sessionCode && isFirebaseConfigured() && !isDemoSession(sessionCode)) {
@@ -127,8 +131,6 @@ export function useCapabilities(rawSessionCode: string | null) {
 
   const handleSort = useCallback(
     (field: SortField) => {
-      // Sorting is display-only - it doesn't change the actual priority ranks
-      // Only drag-and-drop reordering changes ranks and syncs to Firebase
       localSortByField(field)
     },
     [localSortByField]
@@ -136,10 +138,8 @@ export function useCapabilities(rawSessionCode: string | null) {
 
   const importCapabilities = useCallback(
     async (caps: Capability[]) => {
-      // Update local state immediately
       setCapabilities(caps)
 
-      // Sync to Firebase if configured (skip for demo mode)
       if (sessionCode && isFirebaseConfigured() && !isDemoSession(sessionCode)) {
         try {
           await capabilityService.importCapabilities(sessionCode, caps)
@@ -152,8 +152,61 @@ export function useCapabilities(rawSessionCode: string | null) {
     [sessionCode, setCapabilities]
   )
 
+  // Category CRUD (local-only for now; Firebase sync can be added later)
+  const addCategory = useCallback(
+    (name: string, color: string) => { localAddCategory(name, color) },
+    [localAddCategory]
+  )
+
+  const updateCategory = useCallback(
+    (id: string, data: { name?: string; color?: string }) => { localUpdateCategory(id, data) },
+    [localUpdateCategory]
+  )
+
+  const deleteCategory = useCallback(
+    (id: string) => { localDeleteCategory(id) },
+    [localDeleteCategory]
+  )
+
+  // Category assignment on capabilities (syncs capability change to Firebase)
+  const addCategoryToCapability = useCallback(
+    async (capabilityId: string, categoryId: string) => {
+      localAddCategoryToCap(capabilityId, categoryId)
+      if (sessionCode && isFirebaseConfigured() && !isDemoSession(sessionCode)) {
+        try {
+          const cap = useCapabilityStore.getState().capabilities.find(c => c.id === capabilityId)
+          if (cap) {
+            await capabilityService.updateCapability(sessionCode, capabilityId, { categories: cap.categories })
+          }
+        } catch (error) {
+          console.error('Failed to sync category assignment:', error)
+        }
+      }
+    },
+    [sessionCode, localAddCategoryToCap]
+  )
+
+  const removeCategoryFromCapability = useCallback(
+    async (capabilityId: string, categoryId: string) => {
+      localRemoveCategoryFromCap(capabilityId, categoryId)
+      if (sessionCode && isFirebaseConfigured() && !isDemoSession(sessionCode)) {
+        try {
+          const cap = useCapabilityStore.getState().capabilities.find(c => c.id === capabilityId)
+          if (cap) {
+            await capabilityService.updateCapability(sessionCode, capabilityId, { categories: cap.categories })
+          }
+        } catch (error) {
+          console.error('Failed to sync category removal:', error)
+        }
+      }
+    },
+    [sessionCode, localRemoveCategoryFromCap]
+  )
+
   return {
     capabilities,
+    categories,
+    viewMode,
     addCapability,
     updateCapability,
     deleteCapability,
@@ -162,5 +215,12 @@ export function useCapabilities(rawSessionCode: string | null) {
     sortByField: handleSort,
     setCapabilities,
     importCapabilities,
+    addCategory,
+    updateCategory,
+    deleteCategory,
+    setCategories,
+    addCategoryToCapability,
+    removeCategoryFromCapability,
+    setViewMode,
   }
 }

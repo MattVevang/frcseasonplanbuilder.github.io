@@ -1,8 +1,28 @@
-import { Capability, Priority } from '../types/capability'
+import { Capability, CapabilityCategory, Priority } from '../types/capability'
 import { Strategy, GamePlan, MatchPhase } from '../types/strategy'
 
 // Helper to create timestamps
 const now = new Date()
+
+// ============================================
+// Category Definitions
+// ============================================
+
+export const demoCategories2025: CapabilityCategory[] = [
+  { id: 'demo-cat-2025-drive', name: 'Drivetrain', color: 'blue' },
+  { id: 'demo-cat-2025-intake', name: 'Intake', color: 'green' },
+  { id: 'demo-cat-2025-scoring', name: 'Scoring', color: 'purple' },
+  { id: 'demo-cat-2025-climbing', name: 'Climbing', color: 'orange' },
+]
+
+export const demoCategories2026: CapabilityCategory[] = [
+  { id: 'demo-cat-drive', name: 'Drivetrain', color: 'blue' },
+  { id: 'demo-cat-intake', name: 'Intake', color: 'green' },
+  { id: 'demo-cat-scoring', name: 'Scoring', color: 'purple' },
+  { id: 'demo-cat-auto', name: 'Autonomous', color: 'teal' },
+  { id: 'demo-cat-endgame', name: 'Endgame', color: 'orange' },
+  { id: 'demo-cat-coordination', name: 'Coordination', color: 'pink' },
+]
 
 // ============================================
 // 2025 REEFSCAPE Demo Data (Legacy)
@@ -16,6 +36,7 @@ export const demoCapabilities2025: Capability[] = [
     title: 'Coral Floor Intake',
     description: 'Pick up coral game pieces from the ground reliably',
     priority: 'critical' as Priority,
+    categories: ['demo-cat-2025-intake'],
     createdAt: now,
     updatedAt: now,
   },
@@ -25,6 +46,7 @@ export const demoCapabilities2025: Capability[] = [
     title: 'L4 Branch Scoring',
     description: 'Score coral on Level 4 reef branches (5 points each)',
     priority: 'critical' as Priority,
+    categories: ['demo-cat-2025-scoring'],
     createdAt: now,
     updatedAt: now,
   },
@@ -34,6 +56,7 @@ export const demoCapabilities2025: Capability[] = [
     title: 'L3 Branch Scoring',
     description: 'Score coral on Level 3 reef branches (4 points each)',
     priority: 'high' as Priority,
+    categories: ['demo-cat-2025-scoring'],
     createdAt: now,
     updatedAt: now,
   },
@@ -43,6 +66,7 @@ export const demoCapabilities2025: Capability[] = [
     title: 'L2 Branch Scoring',
     description: 'Score coral on Level 2 reef branches (3 points each)',
     priority: 'high' as Priority,
+    categories: ['demo-cat-2025-scoring'],
     createdAt: now,
     updatedAt: now,
   },
@@ -52,6 +76,7 @@ export const demoCapabilities2025: Capability[] = [
     title: 'L1 Trough Scoring',
     description: 'Score coral in the Level 1 trough (2 points each)',
     priority: 'medium' as Priority,
+    categories: ['demo-cat-2025-scoring'],
     createdAt: now,
     updatedAt: now,
   },
@@ -61,6 +86,7 @@ export const demoCapabilities2025: Capability[] = [
     title: 'Algae Pickup',
     description: 'Collect algae game pieces from the reef structure',
     priority: 'high' as Priority,
+    categories: ['demo-cat-2025-intake'],
     createdAt: now,
     updatedAt: now,
   },
@@ -70,6 +96,7 @@ export const demoCapabilities2025: Capability[] = [
     title: 'Processor Scoring',
     description: 'Score algae in the processor (6 points each)',
     priority: 'medium' as Priority,
+    categories: ['demo-cat-2025-scoring', 'demo-cat-2025-intake'],
     createdAt: now,
     updatedAt: now,
   },
@@ -79,6 +106,7 @@ export const demoCapabilities2025: Capability[] = [
     title: 'Net Scoring',
     description: 'Score algae in the net (4 points each)',
     priority: 'medium' as Priority,
+    categories: ['demo-cat-2025-scoring'],
     createdAt: now,
     updatedAt: now,
   },
@@ -88,6 +116,7 @@ export const demoCapabilities2025: Capability[] = [
     title: 'Deep Cage Climb',
     description: 'Climb the deep cage during endgame (12 points)',
     priority: 'high' as Priority,
+    categories: ['demo-cat-2025-climbing'],
     createdAt: now,
     updatedAt: now,
   },
@@ -97,6 +126,7 @@ export const demoCapabilities2025: Capability[] = [
     title: 'Shallow Cage Climb',
     description: 'Backup climb option - shallow cage (6 points)',
     priority: 'low' as Priority,
+    categories: ['demo-cat-2025-climbing'],
     createdAt: now,
     updatedAt: now,
   },
@@ -323,6 +353,7 @@ export const demoCapabilities2026: Capability[] = [
     title: 'Artifact Floor Intake',
     description: 'Pick up purple and green artifacts from spike marks reliably',
     priority: 'critical' as Priority,
+    categories: ['demo-cat-intake'],
     createdAt: now,
     updatedAt: now,
   },
@@ -332,6 +363,7 @@ export const demoCapabilities2026: Capability[] = [
     title: 'CLASSIFIED Scoring',
     description: 'Score artifacts through GOAL to RAMP for CLASSIFIED points (3 pts each)',
     priority: 'critical' as Priority,
+    categories: ['demo-cat-scoring'],
     createdAt: now,
     updatedAt: now,
   },
@@ -341,6 +373,7 @@ export const demoCapabilities2026: Capability[] = [
     title: 'PATTERN Recognition',
     description: 'Decode OBELISK MOTIF and match artifact colors on RAMP',
     priority: 'high' as Priority,
+    categories: ['demo-cat-scoring', 'demo-cat-auto'],
     createdAt: now,
     updatedAt: now,
   },
@@ -350,6 +383,7 @@ export const demoCapabilities2026: Capability[] = [
     title: 'LEAVE Launch Line',
     description: 'Move off LAUNCH LINE during AUTO (3 pts)',
     priority: 'high' as Priority,
+    categories: ['demo-cat-drive', 'demo-cat-auto'],
     createdAt: now,
     updatedAt: now,
   },
@@ -359,6 +393,7 @@ export const demoCapabilities2026: Capability[] = [
     title: 'Return to BASE - Full',
     description: 'Fully return to BASE zone at end of TELEOP (10 pts)',
     priority: 'high' as Priority,
+    categories: ['demo-cat-drive', 'demo-cat-endgame'],
     createdAt: now,
     updatedAt: now,
   },
@@ -368,6 +403,7 @@ export const demoCapabilities2026: Capability[] = [
     title: 'OVERFLOW Scoring',
     description: 'Score artifacts as OVERFLOW when RAMP is blocked (1 pt each)',
     priority: 'medium' as Priority,
+    categories: ['demo-cat-scoring'],
     createdAt: now,
     updatedAt: now,
   },
@@ -377,6 +413,7 @@ export const demoCapabilities2026: Capability[] = [
     title: 'DEPOT Scoring',
     description: 'Place artifacts in DEPOT for bonus points (1 pt each)',
     priority: 'medium' as Priority,
+    categories: ['demo-cat-scoring'],
     createdAt: now,
     updatedAt: now,
   },
@@ -386,6 +423,7 @@ export const demoCapabilities2026: Capability[] = [
     title: 'Human Player Coordination',
     description: 'Receive artifacts from human player in Loading Zone',
     priority: 'medium' as Priority,
+    categories: ['demo-cat-coordination', 'demo-cat-intake'],
     createdAt: now,
     updatedAt: now,
   },
@@ -395,6 +433,7 @@ export const demoCapabilities2026: Capability[] = [
     title: 'Artifact Preloading',
     description: 'Efficiently use 3 preloaded artifacts at match start',
     priority: 'high' as Priority,
+    categories: ['demo-cat-auto', 'demo-cat-intake'],
     createdAt: now,
     updatedAt: now,
   },
@@ -404,6 +443,7 @@ export const demoCapabilities2026: Capability[] = [
     title: 'Dual BASE Coordination',
     description: 'Coordinate with alliance partner for dual full BASE bonus (10 pts)',
     priority: 'low' as Priority,
+    categories: ['demo-cat-coordination', 'demo-cat-endgame'],
     createdAt: now,
     updatedAt: now,
   },
@@ -611,3 +651,4 @@ export const demoStrategies2026: Strategy[] = [...highCycleStrategies2026, ...co
 export const demoCapabilities = demoCapabilities2026
 export const demoGamePlans = demoGamePlans2026
 export const demoStrategies = demoStrategies2026
+export const demoCategories = demoCategories2026

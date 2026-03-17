@@ -1,5 +1,18 @@
 import { useState, useEffect, useMemo } from 'react'
-import { Plus, ThumbsUp, Trash2, Edit2, Settings, X, Check, Tag, Columns, Rows3 } from 'lucide-react'
+import { Plus, ThumbsUp, Trash2, Edit2, Settings, X, Check, Tag, Columns, Rows3, GripVertical } from 'lucide-react'
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+  DragOverEvent,
+  useDroppable,
+  useDraggable,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  closestCorners,
+} from '@dnd-kit/core'
 import { useRetro } from '../../hooks/useRetro'
 import { RetroColumn, RetroItem, RETRO_COLUMN_COLORS } from '../../types/retrospective'
 import RetroItemForm from './RetroItemForm'
@@ -45,6 +58,12 @@ export default function RetroBoard({ sessionCode }: RetroBoardProps) {
   const [editColumnColor, setEditColumnColor] = useState('')
   const [activeTagFilter, setActiveTagFilter] = useState<string | null>(null)
   const [newTagInput, setNewTagInput] = useState('')
+  const [activeDragItem, setActiveDragItem] = useState<RetroItem | null>(null)
+
+  // DnD sensors
+  const retroSensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+  )
 
   // Collect all unique tags: combine registry + any tags on items not yet in registry
   const allTags = useMemo(() => {
@@ -76,6 +95,35 @@ export default function RetroBoard({ sessionCode }: RetroBoardProps) {
     if (!editingItem) return
     updateItem(editingItem.id, data)
     setEditingItem(null)
+  }
+
+  // DnD handlers for retro column view
+  const handleRetroDragStart = (event: DragStartEvent) => {
+    const itemId = String(event.active.id).split('::')[1]
+    const item = retroItems.find((i) => i.id === itemId)
+    if (item) setActiveDragItem(item)
+  }
+
+  const handleRetroDragOver = (_event: DragOverEvent) => {
+    // Placeholder — closestCorners handles detection continuously
+  }
+
+  const handleRetroDragEnd = (event: DragEndEvent) => {
+    setActiveDragItem(null)
+    const { active, over } = event
+    if (!over) return
+
+    const activeId = String(active.id)
+    const overId = String(over.id)
+
+    const itemId = activeId.split('::')[1] ?? ''
+    const sourceColId = activeId.split('::')[0] ?? ''
+    const targetColId = overId.includes('::') ? (overId.split('::')[0] ?? '') : overId
+
+    if (!itemId || sourceColId === targetColId) return
+
+    // Move item to new column
+    updateItem(itemId, { columnId: targetColId })
   }
 
   const handleAddColumn = () => {
@@ -399,74 +447,88 @@ export default function RetroBoard({ sessionCode }: RetroBoardProps) {
 
       {/* Column Board View */}
       {viewMode === 'column' && (
-        <div
-          className="grid gap-3"
-          style={{ gridTemplateColumns: `repeat(auto-fill, minmax(min(100%, 280px), 1fr))` }}
+        <DndContext
+          sensors={retroSensors}
+          collisionDetection={closestCorners}
+          onDragStart={handleRetroDragStart}
+          onDragOver={handleRetroDragOver}
+          onDragEnd={handleRetroDragEnd}
         >
-          {sortedColumns.map((col) => {
-            const colorCfg = RETRO_COLUMN_COLORS[col.color]
-            const items = getItemsForColumn(col.id)
+          <div
+            className="grid gap-3"
+            style={{ gridTemplateColumns: `repeat(auto-fill, minmax(min(100%, 280px), 1fr))` }}
+          >
+            {sortedColumns.map((col) => {
+              const colorCfg = RETRO_COLUMN_COLORS[col.color]
+              const items = getItemsForColumn(col.id)
 
-            return (
-              <div
-                key={col.id}
-                className={cn(
-                  'flex flex-col rounded-xl border min-w-0',
-                  `${colorCfg?.border || 'border-gray-200 dark:border-gray-700'} bg-white dark:bg-gray-800/50`
-                )}
-              >
-                {/* Column header */}
-                <div
-                  className={cn(
-                    'px-3 py-2.5 rounded-t-xl border-b flex items-center justify-between',
-                    `${colorCfg?.headerBg || 'bg-gray-100 dark:bg-gray-800'} ${colorCfg?.border || 'border-gray-200 dark:border-gray-700'}`
-                  )}
-                >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className={cn('w-3 h-3 rounded-full flex-shrink-0', colorCfg?.dot)} />
-                    <span className={cn('text-sm font-semibold truncate', colorCfg?.text || 'text-gray-900 dark:text-white')}>
-                      {col.name}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1.5 flex-shrink-0">
-                    <span className="text-xs font-medium text-gray-500 dark:text-gray-400 bg-white/60 dark:bg-gray-900/40 px-1.5 py-0.5 rounded-full">
-                      {items.length}
-                    </span>
-                    <button
-                      onClick={() => { setAddToColumnId(col.id); setShowAddForm(true) }}
-                      className="p-0.5 rounded hover:bg-white/60 dark:hover:bg-gray-900/40 cursor-pointer"
-                      title={`Add item to ${col.name}`}
-                    >
-                      <Plus className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Items */}
-                <div className="flex-1 p-2 space-y-2 min-h-[80px] max-h-[60vh] overflow-y-auto">
-                  {items.length === 0 ? (
-                    <div className="flex items-center justify-center h-16 text-xs text-gray-400 dark:text-gray-500 italic">
-                      No items yet
+              return (
+                <RetroDropColumn key={col.id} columnId={col.id} colorCfg={colorCfg}>
+                  {/* Column header */}
+                  <div
+                    className={cn(
+                      'px-3 py-2.5 rounded-t-xl border-b flex items-center justify-between',
+                      `${colorCfg?.headerBg || 'bg-gray-100 dark:bg-gray-800'} ${colorCfg?.border || 'border-gray-200 dark:border-gray-700'}`
+                    )}
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className={cn('w-3 h-3 rounded-full flex-shrink-0', colorCfg?.dot)} />
+                      <span className={cn('text-sm font-semibold truncate', colorCfg?.text || 'text-gray-900 dark:text-white')}>
+                        {col.name}
+                      </span>
                     </div>
-                  ) : (
-                    items.map((item) => (
-                      <RetroItemCard
-                        key={item.id}
-                        item={item}
-                        voterId={voterId}
-                        onVote={() => toggleVote(item.id)}
-                        onEdit={() => setEditingItem(item)}
-                        onDelete={() => deleteItem(item.id)}
-                        onTagClick={(tag) => setActiveTagFilter(activeTagFilter === tag ? null : tag)}
-                        activeTagFilter={activeTagFilter}
-                      />
-                    ))
-                  )}
-                </div>
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      <span className="text-xs font-medium text-gray-500 dark:text-gray-400 bg-white/60 dark:bg-gray-900/40 px-1.5 py-0.5 rounded-full">
+                        {items.length}
+                      </span>
+                      <button
+                        onClick={() => { setAddToColumnId(col.id); setShowAddForm(true) }}
+                        className="p-0.5 rounded hover:bg-white/60 dark:hover:bg-gray-900/40 cursor-pointer"
+                        title={`Add item to ${col.name}`}
+                      >
+                        <Plus className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Items */}
+                  <div className="flex-1 p-2 space-y-2 min-h-[80px] max-h-[60vh] overflow-y-auto">
+                    {items.length === 0 ? (
+                      <div className="flex items-center justify-center h-16 text-xs text-gray-400 dark:text-gray-500 italic">
+                        Drag items here
+                      </div>
+                    ) : (
+                      items.map((item) => (
+                        <DraggableRetroCard
+                          key={item.id}
+                          item={item}
+                          columnId={col.id}
+                          voterId={voterId}
+                          onVote={() => toggleVote(item.id)}
+                          onEdit={() => setEditingItem(item)}
+                          onDelete={() => deleteItem(item.id)}
+                          onTagClick={(tag) => setActiveTagFilter(activeTagFilter === tag ? null : tag)}
+                          activeTagFilter={activeTagFilter}
+                        />
+                      ))
+                    )}
+                  </div>
+                </RetroDropColumn>
+              )
+            })}
+          </div>
+
+          <DragOverlay dropAnimation={null}>
+            {activeDragItem && (
+              <div className="p-2.5 rounded-lg border border-primary-300 dark:border-primary-600 bg-white dark:bg-gray-800 shadow-xl max-w-[280px] opacity-90">
+                <h4 className="text-sm font-medium text-gray-900 dark:text-white">{activeDragItem.title}</h4>
+                {activeDragItem.description && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">{activeDragItem.description}</p>
+                )}
               </div>
-            )
-          })}
-        </div>
+            )}
+          </DragOverlay>
+        </DndContext>
       )}
 
       {/* Topic View */}
@@ -508,6 +570,83 @@ export default function RetroBoard({ sessionCode }: RetroBoardProps) {
           isEditing
         />
       )}
+    </div>
+  )
+}
+
+// ── DnD Helpers for Retro Column View ──
+
+function RetroDropColumn({
+  columnId,
+  colorCfg,
+  children,
+}: {
+  columnId: string
+  colorCfg?: typeof RETRO_COLUMN_COLORS[string]
+  children: React.ReactNode
+}) {
+  const { setNodeRef, isOver } = useDroppable({ id: columnId })
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={cn(
+        'flex flex-col rounded-xl border min-w-0 transition-colors',
+        isOver
+          ? 'border-primary-400 dark:border-primary-500 ring-2 ring-primary-300 dark:ring-primary-600'
+          : `${colorCfg?.border || 'border-gray-200 dark:border-gray-700'} bg-white dark:bg-gray-800/50`
+      )}
+    >
+      {children}
+    </div>
+  )
+}
+
+function DraggableRetroCard({
+  item,
+  columnId,
+  voterId,
+  onVote,
+  onEdit,
+  onDelete,
+  onTagClick,
+  activeTagFilter,
+}: {
+  item: RetroItem
+  columnId: string
+  voterId: string
+  onVote: () => void
+  onEdit: () => void
+  onDelete: () => void
+  onTagClick: (tag: string) => void
+  activeTagFilter: string | null
+}) {
+  const cardId = `${columnId}::${item.id}`
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: cardId })
+
+  return (
+    <div ref={setNodeRef} className={cn(isDragging && 'opacity-30')}>
+      <div className="flex items-start gap-1">
+        <div
+          {...attributes}
+          {...listeners}
+          className="flex-shrink-0 p-1 mt-1 cursor-grab active:cursor-grabbing touch-none rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+          aria-label="Drag to move"
+        >
+          <GripVertical className="w-3 h-3 text-gray-400" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <RetroItemCard
+            item={item}
+            voterId={voterId}
+            onVote={onVote}
+            onEdit={onEdit}
+            onDelete={onDelete}
+            onTagClick={onTagClick}
+            activeTagFilter={activeTagFilter}
+          />
+        </div>
+      </div>
     </div>
   )
 }

@@ -1,0 +1,17 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Session documents
+    match /sessions/{sessionCode} {
+      allow read, write: if true;
+
+      // Wildcard rule covers ALL subcollections:
+      // capabilities, strategies, gamePlans, retroItems, retroColumns,
+      // and any future subcollections added later.
+      match /{subcollection}/{docId} {
+        allow read, write: if true;
+      }
+    }
+  }
+}

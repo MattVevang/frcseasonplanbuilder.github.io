@@ -542,7 +542,7 @@ export default function RetroBoard({ sessionCode }: RetroBoardProps) {
           onEdit={(item) => setEditingItem(item)}
           onDelete={(id) => deleteItem(id)}
           onAddItem={(colId) => { setAddToColumnId(colId); setShowAddForm(true) }}
-          onMoveItem={(itemId, newColId) => updateItem(itemId, { columnId: newColId })}
+          onMoveItem={(itemId, updates) => updateItem(itemId, updates)}
         />
       )}
 

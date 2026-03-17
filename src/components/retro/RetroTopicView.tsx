@@ -24,7 +24,7 @@ interface RetroTopicViewProps {
   onEdit: (item: RetroItem) => void
   onDelete: (itemId: string) => void
   onAddItem: (columnId?: string) => void
-  onMoveItem: (itemId: string, newColumnId: string) => void
+  onMoveItem: (itemId: string, updates: { columnId?: string; tags?: string[] }) => void
 }
 
 interface TopicSection {
@@ -188,8 +188,15 @@ export default function RetroTopicView({
     return tagSections
   }, [retroItems, allTags, sortedColumns])
 
+  // Use @@ as tag separator since :: is used for column::item
+  // Droppable ID format: "tag@@columnId"  (or "__untagged__@@columnId")
+  // Draggable ID format: "tag@@columnId::itemId"
+  const encodeTag = (tag: string) => tag || '__untagged__'
+
   const handleDragStart = (event: DragStartEvent) => {
-    const itemId = String(event.active.id).split('::')[1]
+    // Format: "tag@@columnId::itemId"
+    const parts = String(event.active.id).split('::')
+    const itemId = parts[1]
     const item = retroItems.find((i) => i.id === itemId)
     if (item) setActiveDragItem(item)
   }
@@ -202,15 +209,44 @@ export default function RetroTopicView({
     const activeId = String(active.id)
     const overId = String(over.id)
 
-    // Draggable IDs: "columnId::itemId", Droppable IDs: "columnId" or "tag::columnId"
-    const itemId = activeId.split('::')[1] ?? ''
-    const sourceColId = activeId.split('::')[0] ?? ''
-    // Droppable ID may be "tag::columnId" (cell) or "columnId::itemId" (another card)
-    const targetColId = overId.includes('::') ? (overId.split('::')[0] ?? '') : overId
+    // Parse active: "sourceTag@@sourceColId::itemId"
+    const [activeTagCol, itemId] = activeId.split('::')
+    const [sourceTag, sourceColId] = (activeTagCol ?? '').split('@@')
+    if (!itemId) return
 
-    if (!itemId || sourceColId === targetColId) return
+    // Parse over: could be droppable "targetTag@@targetColId" or another card "targetTag@@targetColId::otherId"
+    const overTagCol = overId.includes('::') ? overId.split('::')[0] : overId
+    const [targetTag, targetColId] = (overTagCol ?? '').split('@@')
 
-    onMoveItem(itemId, targetColId)
+    if (!targetColId) return
+
+    const colChanged = sourceColId !== targetColId
+    const tagChanged = sourceTag !== targetTag
+    if (!colChanged && !tagChanged) return
+
+    // Build update payload
+    const updates: { columnId?: string; tags?: string[] } = {}
+    if (colChanged) updates.columnId = targetColId
+
+    if (tagChanged) {
+      const item = retroItems.find((i) => i.id === itemId)
+      if (item) {
+        const currentTags = [...(item.tags || [])]
+        const realSourceTag = sourceTag === '__untagged__' ? '' : sourceTag
+        const realTargetTag = targetTag === '__untagged__' ? '' : targetTag
+
+        // Remove old tag, add new tag
+        const filtered = realSourceTag
+          ? currentTags.filter((t) => t !== realSourceTag)
+          : currentTags
+        if (realTargetTag && !filtered.includes(realTargetTag)) {
+          filtered.push(realTargetTag)
+        }
+        updates.tags = filtered
+      }
+    }
+
+    onMoveItem(itemId, updates)
   }
 
   if (sections.length === 0) {
@@ -285,12 +321,12 @@ export default function RetroTopicView({
                 {section.columns.map(({ column, items }) => (
                   <TopicDropCell
                     key={column.id}
-                    droppableId={`${column.id}`}
+                    droppableId={`${encodeTag(section.tag)}@@${column.id}`}
                   >
                     {items.map((item) => (
                       <DraggableTopicCard
                         key={item.id}
-                        dragId={`${column.id}::${item.id}`}
+                        dragId={`${encodeTag(section.tag)}@@${column.id}::${item.id}`}
                         item={item}
                         voterId={voterId}
                         onVote={() => onVote(item.id)}

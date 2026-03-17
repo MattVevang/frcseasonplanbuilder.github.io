@@ -4,30 +4,17 @@ import {
   DragEndEvent,
   DragOverlay,
   DragStartEvent,
+  DragOverEvent,
   useDroppable,
   useDraggable,
   PointerSensor,
   useSensor,
   useSensors,
-  closestCenter,
-  pointerWithin,
-  type CollisionDetection,
+  closestCorners,
 } from '@dnd-kit/core'
 import { Edit2, ChevronUp, ChevronDown, GripVertical } from 'lucide-react'
 import { Capability, CapabilityCategory, Priority, PRIORITY_CONFIG, CATEGORY_COLORS } from '../../types/capability'
 import { cn } from '../../utils/cn'
-
-// Use pointerWithin to detect which column the cursor is in, then prefer
-// card droppables within that column for precise reordering.  Falls back to
-// closestCenter when the pointer isn't inside any droppable (edge of screen).
-const kanbanCollision: CollisionDetection = (args) => {
-  const pointerCollisions = pointerWithin(args)
-  if (pointerCollisions.length > 0) {
-    const cardHits = pointerCollisions.filter((c) => String(c.id).includes('::'))
-    return cardHits.length > 0 ? cardHits : pointerCollisions
-  }
-  return closestCenter(args)
-}
 
 interface SwimlaneBoardViewProps {
   capabilities: Capability[]
@@ -150,17 +137,13 @@ function SwimlaneCard({
   onMoveDown?: () => void
 }) {
   const cardId = `${columnId}::${capability.id}`
-  const { attributes, listeners, setNodeRef: setDragRef, transform, isDragging } = useDraggable({ id: cardId })
+  const { attributes, listeners, setNodeRef: setDragRef, isDragging } = useDraggable({ id: cardId })
   const { setNodeRef: setDropRef, isOver } = useDroppable({ id: cardId })
 
   const composedRef = useCallback((node: HTMLElement | null) => {
     setDragRef(node)
     setDropRef(node)
   }, [setDragRef, setDropRef])
-
-  const style = transform
-    ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` }
-    : undefined
 
   const priorityStyle = priorityColors[capability.priority]
   const priorityLabel = PRIORITY_CONFIG[capability.priority].label
@@ -173,14 +156,13 @@ function SwimlaneCard({
   return (
     <div
       ref={composedRef}
-      style={style}
       className={cn(
-        'p-2 rounded-lg border bg-white dark:bg-gray-800 transition-shadow hover:shadow-md group',
+        'p-2 rounded-lg border bg-white dark:bg-gray-800 transition-shadow group',
         isDragging
-          ? 'opacity-50 shadow-lg border-primary-300 dark:border-primary-600'
+          ? 'opacity-30 border-dashed border-gray-300 dark:border-gray-600'
           : isOver
             ? 'ring-2 ring-primary-300 dark:ring-primary-500 border-primary-300 dark:border-primary-500 shadow-md'
-            : 'border-gray-200 dark:border-gray-700'
+            : 'border-gray-200 dark:border-gray-700 hover:shadow-md'
       )}
     >
       <div className="flex items-start gap-1">
@@ -327,11 +309,23 @@ export default function SwimlaneBoardView({
     }
   }
 
+  // Resolve which column ID a droppable target belongs to
+  const resolveColumnId = (id: string) => {
+    if (id.includes('::')) return id.split('::')[0] ?? ''
+    return id
+  }
+
   const handleDragStart = (event: DragStartEvent) => {
     const dragId = event.active.id as string
     const capabilityId = dragId.split('::')[1]
     const cap = capabilities.find((c) => c.id === capabilityId)
     if (cap) setActiveCard(cap)
+  }
+
+  const handleDragOver = (_event: DragOverEvent) => {
+    // DragOverlay follows the cursor automatically.
+    // This handler exists so closestCorners continuously re-evaluates
+    // which droppable the pointer is nearest to during the drag.
   }
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -343,19 +337,15 @@ export default function SwimlaneBoardView({
     const activeId = active.id as string
     const overId = over.id as string
 
-    const activeParts = activeId.split('::')
-    const sourceColumnId = activeParts[0] ?? ''
-    const capabilityId = activeParts[1] ?? ''
+    const capabilityId = activeId.split('::')[1] ?? ''
+    const sourceColumnId = resolveColumnId(activeId)
+    const targetColumnId = resolveColumnId(overId)
 
     if (!capabilityId) return
 
-    // Determine if we dropped on a card (has ::) or a column (no ::)
-    const isOverCard = overId.includes('::')
-    const targetColumnId = isOverCard ? (overId.split('::')[0] ?? '') : overId
-    const targetCapId = isOverCard ? (overId.split('::')[1] ?? '') : null
-
     if (sourceColumnId === targetColumnId) {
       // Within-column: reorder by swapping with target card
+      const targetCapId = overId.includes('::') ? (overId.split('::')[1] ?? '') : null
       if (targetCapId && capabilityId !== targetCapId) {
         reorderCapabilities(capabilityId, targetCapId)
       }
@@ -388,8 +378,9 @@ export default function SwimlaneBoardView({
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={kanbanCollision}
+      collisionDetection={closestCorners}
       onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
       <div

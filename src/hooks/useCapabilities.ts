@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { useCapabilityStore } from '../stores/capabilityStore'
-import { Capability, CapabilityFormData, SortField, PRIORITY_CONFIG } from '../types/capability'
+import { Capability, CapabilityCategory, CapabilityFormData, SortField, PRIORITY_CONFIG } from '../types/capability'
 import { isFirebaseConfigured } from '../services/firebase'
 import { isDemoSession } from '../utils/demoUtils'
 import * as capabilityService from '../services/capabilityService'
@@ -152,20 +152,68 @@ export function useCapabilities(rawSessionCode: string | null) {
     [sessionCode, setCapabilities]
   )
 
-  // Category CRUD (local-only for now; Firebase sync can be added later)
+  const importCategories = useCallback(
+    async (cats: CapabilityCategory[]) => {
+      setCategories(cats)
+      if (sessionCode && isFirebaseConfigured() && !isDemoSession(sessionCode)) {
+        try {
+          await capabilityService.importCategories(sessionCode, cats)
+        } catch (error) {
+          console.error('Failed to import categories to Firebase:', error)
+        }
+      }
+    },
+    [sessionCode, setCategories]
+  )
+
+  // Category CRUD (synced to Firebase)
   const addCategory = useCallback(
-    (name: string, color: string) => { localAddCategory(name, color) },
-    [localAddCategory]
+    async (name: string, color: string) => {
+      if (sessionCode && isFirebaseConfigured() && !isDemoSession(sessionCode)) {
+        try {
+          const category = await capabilityService.addCategory(sessionCode, name, color)
+          // Firebase listener will update the store
+          return category
+        } catch (error) {
+          console.error('Failed to add category to Firebase:', error)
+          toast.error('Failed to save category.')
+          localAddCategory(name, color)
+        }
+      } else {
+        localAddCategory(name, color)
+      }
+    },
+    [sessionCode, localAddCategory]
   )
 
   const updateCategory = useCallback(
-    (id: string, data: { name?: string; color?: string }) => { localUpdateCategory(id, data) },
-    [localUpdateCategory]
+    async (id: string, data: { name?: string; color?: string }) => {
+      localUpdateCategory(id, data)
+      if (sessionCode && isFirebaseConfigured() && !isDemoSession(sessionCode)) {
+        try {
+          await capabilityService.updateCategory(sessionCode, id, data)
+        } catch (error) {
+          console.error('Failed to update category in Firebase:', error)
+          toast.error('Failed to save category changes.')
+        }
+      }
+    },
+    [sessionCode, localUpdateCategory]
   )
 
   const deleteCategory = useCallback(
-    (id: string) => { localDeleteCategory(id) },
-    [localDeleteCategory]
+    async (id: string) => {
+      localDeleteCategory(id)
+      if (sessionCode && isFirebaseConfigured() && !isDemoSession(sessionCode)) {
+        try {
+          await capabilityService.deleteCategory(sessionCode, id)
+        } catch (error) {
+          console.error('Failed to delete category from Firebase:', error)
+          toast.error('Failed to delete category.')
+        }
+      }
+    },
+    [sessionCode, localDeleteCategory]
   )
 
   // Category assignment on capabilities (syncs capability change to Firebase)
@@ -215,6 +263,7 @@ export function useCapabilities(rawSessionCode: string | null) {
     sortByField: handleSort,
     setCapabilities,
     importCapabilities,
+    importCategories,
     addCategory,
     updateCategory,
     deleteCategory,

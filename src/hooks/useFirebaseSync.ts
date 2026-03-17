@@ -5,7 +5,7 @@ import { getSessionAndRefresh } from '../services/sessionService'
 import { useCapabilityStore } from '../stores/capabilityStore'
 import { useStrategyStore } from '../stores/strategyStore'
 import { useRetroStore } from '../stores/retroStore'
-import { Capability } from '../types/capability'
+import { Capability, CapabilityCategory } from '../types/capability'
 import { Strategy, GamePlan } from '../types/strategy'
 import { RetroItem, RetroColumn } from '../types/retrospective'
 import { isDemoSession } from '../utils/demoUtils'
@@ -27,6 +27,7 @@ export function useFirebaseSync({ sessionCode: rawSessionCode }: UseFirebaseSync
   const isInitialLoadRef = useRef(true)
 
   const setCapabilities = useCapabilityStore((s) => s.setCapabilities)
+  const setCategories = useCapabilityStore((s) => s.setCategories)
   const setStrategies = useStrategyStore((s) => s.setStrategies)
   const setGamePlans = useStrategyStore((s) => s.setGamePlans)
   const setRetroItems = useRetroStore((s) => s.setRetroItems)
@@ -56,6 +57,7 @@ export function useFirebaseSync({ sessionCode: rawSessionCode }: UseFirebaseSync
 
     let unsubSession: (() => void) | null = null
     let unsubCapabilities: (() => void) | null = null
+    let unsubCategories: (() => void) | null = null
     let unsubStrategies: (() => void) | null = null
     let unsubGamePlans: (() => void) | null = null
     let unsubRetroItems: (() => void) | null = null
@@ -108,6 +110,20 @@ export function useFirebaseSync({ sessionCode: rawSessionCode }: UseFirebaseSync
             setIsLoading(false)
             isInitialLoadRef.current = false
           }
+        })
+
+        // Listen to capability categories
+        const catColRef = collection(db, 'sessions', sessionCode, 'capabilityCategories')
+        unsubCategories = onSnapshot(catColRef, (snapshot) => {
+          const cats: CapabilityCategory[] = snapshot.docs.map((d) => {
+            const data = d.data()
+            return {
+              id: d.id,
+              name: data.name || '',
+              color: data.color || 'blue',
+            }
+          })
+          setCategories(cats)
         })
 
         // Listen to game plans
@@ -210,12 +226,13 @@ export function useFirebaseSync({ sessionCode: rawSessionCode }: UseFirebaseSync
     return () => {
       unsubSession?.()
       unsubCapabilities?.()
+      unsubCategories?.()
       unsubStrategies?.()
       unsubGamePlans?.()
       unsubRetroItems?.()
       unsubRetroColumns?.()
     }
-  }, [sessionCode, setCapabilities, setStrategies, setGamePlans, setRetroItems, setRetroColumns])
+  }, [sessionCode, setCapabilities, setCategories, setStrategies, setGamePlans, setRetroItems, setRetroColumns])
 
   return {
     isConnected,

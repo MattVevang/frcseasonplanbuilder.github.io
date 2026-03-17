@@ -11,7 +11,7 @@ import {
   writeBatch,
 } from 'firebase/firestore'
 import { getFirebaseDb } from './firebase'
-import { Capability, CapabilityFormData } from '../types/capability'
+import { Capability, CapabilityCategory, CapabilityFormData } from '../types/capability'
 import { incrementSessionVersion } from './sessionService'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -171,4 +171,90 @@ export async function importCapabilities(
 
   await batch.commit()
   await incrementSessionVersion(sessionCode)
+}
+
+// ── Capability Categories ──
+
+function getCategoriesCollection(sessionCode: string) {
+  const db = getFirebaseDb()
+  if (!db) return null
+  return collection(db, 'sessions', sessionCode, 'capabilityCategories')
+}
+
+export async function getCategories(sessionCode: string): Promise<CapabilityCategory[]> {
+  const colRef = getCategoriesCollection(sessionCode)
+  if (!colRef) return []
+  const snapshot = await getDocs(colRef)
+  return snapshot.docs.map((d) => {
+    const data = d.data()
+    return {
+      id: d.id,
+      name: data.name || '',
+      color: data.color || 'blue',
+    }
+  })
+}
+
+export async function addCategory(
+  sessionCode: string,
+  name: string,
+  color: string
+): Promise<CapabilityCategory> {
+  const db = getFirebaseDb()
+  if (!db) throw new Error('Firebase not configured')
+  const id = uuidv4()
+  const category: CapabilityCategory = { id, name, color }
+  const docRef = doc(db, 'sessions', sessionCode, 'capabilityCategories', id)
+  await setDoc(docRef, { name, color })
+  await incrementSessionVersion(sessionCode)
+  return category
+}
+
+export async function updateCategory(
+  sessionCode: string,
+  id: string,
+  data: { name?: string; color?: string }
+): Promise<void> {
+  const db = getFirebaseDb()
+  if (!db) return
+  const docRef = doc(db, 'sessions', sessionCode, 'capabilityCategories', id)
+  await updateDoc(docRef, data)
+  await incrementSessionVersion(sessionCode)
+}
+
+export async function deleteCategory(
+  sessionCode: string,
+  id: string
+): Promise<void> {
+  const db = getFirebaseDb()
+  if (!db) return
+  const docRef = doc(db, 'sessions', sessionCode, 'capabilityCategories', id)
+  await deleteDoc(docRef)
+  await incrementSessionVersion(sessionCode)
+}
+
+export async function importCategories(
+  sessionCode: string,
+  categories: CapabilityCategory[]
+): Promise<void> {
+  const db = getFirebaseDb()
+  if (!db) return
+  await clearAllCategories(sessionCode)
+  const batch = writeBatch(db)
+  categories.forEach((cat) => {
+    const docRef = doc(db, 'sessions', sessionCode, 'capabilityCategories', cat.id)
+    batch.set(docRef, { name: cat.name, color: cat.color })
+  })
+  await batch.commit()
+  await incrementSessionVersion(sessionCode)
+}
+
+export async function clearAllCategories(sessionCode: string): Promise<void> {
+  const db = getFirebaseDb()
+  if (!db) return
+  const colRef = collection(db, 'sessions', sessionCode, 'capabilityCategories')
+  const snapshot = await getDocs(colRef)
+  const batch = writeBatch(db)
+  snapshot.docs.forEach((d) => batch.delete(d.ref))
+  await batch.commit()
 }

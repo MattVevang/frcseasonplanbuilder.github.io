@@ -1,16 +1,18 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
-import { ListChecks, Target, Download, Upload, Trash2, Wifi, WifiOff, Loader2, Clock, AlertTriangle, Eye } from 'lucide-react'
+import { ListChecks, Target, MessageSquare, Download, Upload, Trash2, Wifi, WifiOff, Loader2, Clock, AlertTriangle, Eye } from 'lucide-react'
 import Button from '../components/ui/Button'
 import Tabs from '../components/ui/Tabs'
 import HelpButton from '../components/ui/HelpButton'
-import { capabilitiesHelp, strategyHelp } from '../content/helpContent'
+import { capabilitiesHelp, strategyHelp, retroHelp } from '../content/helpContent'
 import CapabilityList from '../components/capabilities/CapabilityList'
 import StrategyList from '../components/strategy/StrategyList'
+import RetroBoard from '../components/retro/RetroBoard'
 import ClearDataDialog from '../components/ui/ClearDataDialog'
 import { useCapabilities } from '../hooks/useCapabilities'
 import { useStrategies } from '../hooks/useStrategies'
 import { useGamePlans } from '../hooks/useGamePlans'
+import { useRetro } from '../hooks/useRetro'
 import { useFirebaseSync } from '../hooks/useFirebaseSync'
 import { useDemoData } from '../hooks/useDemoData'
 import { getSession, deleteSession } from '../services/sessionService'
@@ -19,9 +21,11 @@ import { validatePin } from '../utils/pinUtils'
 import { isFirebaseConfigured } from '../services/firebase'
 import { isDemoSession } from '../utils/demoUtils'
 import { exportData, importData } from '../utils/dataTransfer'
+import { saveSessionCookie } from '../utils/sessionCookie'
+import { getVoterId } from '../utils/voterId'
 import toast from 'react-hot-toast'
 
-type TabType = 'capabilities' | 'strategy'
+type TabType = 'capabilities' | 'strategy' | 'retro'
 
 export default function WorkspacePage() {
   const { sessionCode } = useParams<{ sessionCode: string }>()
@@ -38,6 +42,7 @@ export default function WorkspacePage() {
   const { capabilities, categories, clearAll: clearCapabilities, importCapabilities, setCategories } = useCapabilities(sessionCode ?? null)
   const { strategies, clearAll: clearStrategies, importStrategies } = useStrategies(sessionCode ?? null)
   const { gamePlans, importGamePlans } = useGamePlans(sessionCode ?? null)
+  const { retroItems, retroColumns, retroTags, importRetro, clearAll: clearRetro } = useRetro(sessionCode ?? null)
   const { isConnected, isLoading, isFirebaseEnabled, sessionNotFound, isDemoMode } = useFirebaseSync({ sessionCode: sessionCode ?? null })
 
   // Initialize demo data when in demo mode
@@ -96,6 +101,9 @@ export default function WorkspacePage() {
 
         // PIN validated (or no PIN required)
         setPinValidated(true)
+
+        // Save session cookie for quick re-access and vote ID persistence
+        saveSessionCookie(sessionCode.toLowerCase(), pin || undefined, getVoterId())
       } catch (err) {
         console.error('PIN validation error:', err)
         setPinError('Failed to validate access')
@@ -145,7 +153,7 @@ export default function WorkspacePage() {
   }
 
   const handleExport = () => {
-    exportData(sessionCode, capabilities, gamePlans, strategies, categories)
+    exportData(sessionCode, capabilities, gamePlans, strategies, categories, retroItems, retroColumns, retroTags)
     toast.success('Data exported successfully!')
   }
 
@@ -165,7 +173,12 @@ export default function WorkspacePage() {
         if (result.categories?.length) {
           setCategories(result.categories)
         }
-        toast.success(`Imported ${result.capabilities.length} capabilities, ${result.gamePlans.length} game plans, and ${result.strategies.length} strategies`)
+        if (result.retroItems?.length || result.retroColumns?.length) {
+          await importRetro(result.retroItems, result.retroColumns, result.retroTags)
+        }
+        const parts = [`${result.capabilities.length} capabilities`, `${result.gamePlans.length} game plans`, `${result.strategies.length} strategies`]
+        if (result.retroItems.length) parts.push(`${result.retroItems.length} retro items`)
+        toast.success(`Imported ${parts.join(', ')}`)
       } catch (err) {
         toast.error(err instanceof Error ? err.message : 'Failed to import data')
       }
@@ -176,6 +189,7 @@ export default function WorkspacePage() {
   const handleClearAll = async (options: {
     clearCapabilities: boolean
     clearStrategies: boolean
+    clearRetro: boolean
     deleteSession: boolean
   }) => {
     if (options.deleteSession) {
@@ -197,6 +211,11 @@ export default function WorkspacePage() {
       cleared.push('strategies')
     }
 
+    if (options.clearRetro && retroItems.length > 0) {
+      await clearRetro(true)
+      cleared.push('retrospective')
+    }
+
     if (cleared.length > 0) {
       toast.success(`Cleared ${cleared.join(' and ')}`)
     }
@@ -213,6 +232,11 @@ export default function WorkspacePage() {
       id: 'strategy' as const,
       label: 'Match Strategy',
       icon: <Target className="w-4 h-4" />,
+    },
+    {
+      id: 'retro' as const,
+      label: 'Retrospective',
+      icon: <MessageSquare className="w-4 h-4" />,
     },
   ]
 
@@ -248,7 +272,7 @@ export default function WorkspacePage() {
         {!isDemoMode && (
           <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">
             <Clock className="w-3.5 h-3.5" />
-            <span>Data expires after 30 days - Export to backup, Import to restore</span>
+            <span>Data expires after 120 days - Export to backup, Import to restore</span>
           </div>
         )}
       </div>
@@ -261,8 +285,8 @@ export default function WorkspacePage() {
         />
 
         <div className="flex items-center gap-2">
-          <HelpButton title={activeTab === 'capabilities' ? capabilitiesHelp.title : strategyHelp.title}>
-            {activeTab === 'capabilities' ? capabilitiesHelp.content : strategyHelp.content}
+          <HelpButton title={activeTab === 'capabilities' ? capabilitiesHelp.title : activeTab === 'strategy' ? strategyHelp.title : retroHelp.title}>
+            {activeTab === 'capabilities' ? capabilitiesHelp.content : activeTab === 'strategy' ? strategyHelp.content : retroHelp.content}
           </HelpButton>
           <Button
             variant="secondary"
@@ -296,8 +320,10 @@ export default function WorkspacePage() {
 
       {activeTab === 'capabilities' ? (
         <CapabilityList sessionCode={sessionCode} />
-      ) : (
+      ) : activeTab === 'strategy' ? (
         <StrategyList sessionCode={sessionCode} />
+      ) : (
+        <RetroBoard sessionCode={sessionCode} />
       )}
 
       <ClearDataDialog
@@ -306,6 +332,7 @@ export default function WorkspacePage() {
         onConfirm={handleClearAll}
         capabilityCount={capabilities.length}
         strategyCount={strategies.length}
+        retroItemCount={retroItems.length}
         isFirebaseEnabled={isFirebaseEnabled}
         isDemoMode={isDemoMode}
       />

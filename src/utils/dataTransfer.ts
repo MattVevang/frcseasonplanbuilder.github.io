@@ -1,25 +1,42 @@
 import { Capability, CapabilityCategory } from '../types/capability'
 import { Strategy, GamePlan } from '../types/strategy'
+import { RetroItem, RetroColumn } from '../types/retrospective'
 
 interface ExportData {
-  version: '4.0'
+  version: '5.0'
   exportedAt: string
   sessionCode: string
   capabilities: Capability[]
   gamePlans: GamePlan[]
   strategies: Strategy[]
   categories: CapabilityCategory[]
+  retroItems: RetroItem[]
+  retroColumns: RetroColumn[]
+  retroTags: string[]
 }
 
 // Support for older versions
 interface LegacyExportData {
-  version: '2.0' | '3.0' | string
+  version: '2.0' | '3.0' | '4.0' | string
   exportedAt: string
   sessionCode: string
   capabilities: Capability[]
   gamePlans?: GamePlan[]
   strategies: Strategy[]
   categories?: CapabilityCategory[]
+  retroItems?: RetroItem[]
+  retroColumns?: RetroColumn[]
+  retroTags?: string[]
+}
+
+export interface ImportResult {
+  capabilities: Capability[]
+  gamePlans: GamePlan[]
+  strategies: Strategy[]
+  categories: CapabilityCategory[]
+  retroItems: RetroItem[]
+  retroColumns: RetroColumn[]
+  retroTags: string[]
 }
 
 export function exportData(
@@ -27,16 +44,22 @@ export function exportData(
   capabilities: Capability[],
   gamePlans: GamePlan[],
   strategies: Strategy[],
-  categories: CapabilityCategory[]
+  categories: CapabilityCategory[],
+  retroItems: RetroItem[],
+  retroColumns: RetroColumn[],
+  retroTags: string[]
 ): void {
   const data: ExportData = {
-    version: '4.0',
+    version: '5.0',
     exportedAt: new Date().toISOString(),
     sessionCode,
     capabilities,
     gamePlans,
     strategies,
     categories,
+    retroItems,
+    retroColumns,
+    retroTags,
   }
 
   const blob = new Blob([JSON.stringify(data, null, 2)], {
@@ -50,9 +73,7 @@ export function exportData(
   URL.revokeObjectURL(url)
 }
 
-export async function importData(
-  file: File
-): Promise<{ capabilities: Capability[]; gamePlans: GamePlan[]; strategies: Strategy[]; categories: CapabilityCategory[] }> {
+export async function importData(file: File): Promise<ImportResult> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
 
@@ -73,8 +94,25 @@ export async function importData(
           updatedAt: new Date(c.updatedAt),
         }))
 
-        // Handle v4.0 with categories
-        if (rawData.version === '4.0') {
+        // Parse retro data (present in v5.0+)
+        const retroItems: RetroItem[] = (rawData.retroItems || []).map((item: RetroItem) => ({
+          ...item,
+          tags: item.tags || [],
+          voterIds: item.voterIds || [],
+          createdAt: new Date(item.createdAt),
+          updatedAt: new Date(item.updatedAt),
+        }))
+
+        const retroColumns: RetroColumn[] = (rawData.retroColumns || []).map((col: RetroColumn) => ({
+          ...col,
+          createdAt: new Date(col.createdAt),
+          updatedAt: new Date(col.updatedAt),
+        }))
+
+        const retroTags: string[] = rawData.retroTags || []
+
+        if (rawData.version === '5.0' || rawData.version === '4.0') {
+          // Handle v5.0 (with retro) and v4.0 (with categories)
           const gamePlans = (rawData.gamePlans || []).map((gp: GamePlan) => ({
             ...gp,
             createdAt: new Date(gp.createdAt),
@@ -89,7 +127,7 @@ export async function importData(
 
           const categories: CapabilityCategory[] = rawData.categories || []
 
-          resolve({ capabilities, gamePlans, strategies, categories })
+          resolve({ capabilities, gamePlans, strategies, categories, retroItems, retroColumns, retroTags })
         } else if (rawData.version === '3.0' && rawData.gamePlans) {
           // Handle v3.0 with game plans but no categories
           const gamePlans = rawData.gamePlans.map((gp: GamePlan) => ({
@@ -104,7 +142,7 @@ export async function importData(
             updatedAt: new Date(s.updatedAt),
           }))
 
-          resolve({ capabilities, gamePlans, strategies, categories: [] })
+          resolve({ capabilities, gamePlans, strategies, categories: [], retroItems: [], retroColumns: [], retroTags: [] })
         } else {
           // Handle legacy v2.0 format
           const legacyData = rawData as LegacyExportData
@@ -133,6 +171,9 @@ export async function importData(
             gamePlans: [defaultGamePlan],
             strategies,
             categories: [],
+            retroItems: [],
+            retroColumns: [],
+            retroTags: [],
           })
         }
       } catch {

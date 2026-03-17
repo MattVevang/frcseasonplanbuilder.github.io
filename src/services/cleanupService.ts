@@ -60,6 +60,20 @@ export async function cleanupExpiredSessions(): Promise<number> {
         await deleteDoc(gamePlanDoc.ref)
       }
 
+      // Delete retroItems subcollection
+      const retroItemsRef = collection(db, 'sessions', sessionCode, 'retroItems')
+      const retroItemsSnapshot = await getDocs(retroItemsRef)
+      for (const retroDoc of retroItemsSnapshot.docs) {
+        await deleteDoc(retroDoc.ref)
+      }
+
+      // Delete retroColumns subcollection
+      const retroColumnsRef = collection(db, 'sessions', sessionCode, 'retroColumns')
+      const retroColumnsSnapshot = await getDocs(retroColumnsRef)
+      for (const retroColDoc of retroColumnsSnapshot.docs) {
+        await deleteDoc(retroColDoc.ref)
+      }
+
       // Delete the session document
       await deleteDoc(doc(db, 'sessions', sessionCode))
       deletedCount++

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Bot, Users, ListChecks, Target, ArrowRight, Clock, MessageSquare, Loader2, Lock, Eye, RefreshCw } from 'lucide-react'
+import { Bot, Users, ListChecks, Target, ArrowRight, Clock, MessageSquare, Loader2, Lock, Eye, RefreshCw, RotateCcw, X } from 'lucide-react'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import HelpButton from '../components/ui/HelpButton'
@@ -8,6 +8,7 @@ import { overviewHelp } from '../content/helpContent'
 import { getSession, createSession } from '../services/sessionService'
 import { hashPin, validatePin, isValidPin } from '../utils/pinUtils'
 import { isFirebaseConfigured } from '../services/firebase'
+import { getSavedSessions, removeSessionEntry, type SessionEntry } from '../utils/sessionCookie'
 
 type Step = 'code' | 'create-pin' | 'enter-pin'
 
@@ -18,7 +19,35 @@ export default function HomePage() {
   const [step, setStep] = useState<Step>('code')
   const [isLoading, setIsLoading] = useState(false)
   const [storedPinHash, setStoredPinHash] = useState<string | null>(null)
+  const [dismissedSessions, setDismissedSessions] = useState<string[]>([])
   const navigate = useNavigate()
+
+  const savedSessions = getSavedSessions().filter(
+    (s) => s.sessionCode !== 'demo' && !dismissedSessions.includes(s.sessionCode)
+  )
+
+  const handleReturnToSession = (entry: SessionEntry) => {
+    const pinParam = entry.pin ? `?pin=${entry.pin}` : ''
+    navigate(`/session/${entry.sessionCode}${pinParam}`)
+  }
+
+  const handleDismissSession = (sessionCode: string) => {
+    removeSessionEntry(sessionCode)
+    setDismissedSessions((prev) => [...prev, sessionCode])
+  }
+
+  const formatTimeAgo = (timestamp: number): string => {
+    const seconds = Math.floor((Date.now() - timestamp) / 1000)
+    if (seconds < 60) return 'just now'
+    const minutes = Math.floor(seconds / 60)
+    if (minutes < 60) return `${minutes}m ago`
+    const hours = Math.floor(minutes / 60)
+    if (hours < 24) return `${hours}h ago`
+    const days = Math.floor(hours / 24)
+    if (days === 1) return 'yesterday'
+    if (days < 30) return `${days}d ago`
+    return `${Math.floor(days / 30)}mo ago`
+  }
 
   const handleSessionCodeSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -134,6 +163,41 @@ export default function HomePage() {
           Collaborate with your team to plan robot capabilities and match strategies for the upcoming season.
         </p>
       </div>
+
+      {/* Return to previous sessions */}
+      {savedSessions.length > 0 && step === 'code' && (
+        <div className="w-full max-w-md space-y-2">
+          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Recent Sessions</p>
+          {savedSessions.map((entry) => (
+            <div
+              key={entry.sessionCode}
+              className="p-3 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg flex items-center gap-3"
+            >
+              <RotateCcw className="w-4 h-4 text-primary-600 dark:text-primary-400 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <span className="text-sm font-mono font-medium text-primary-800 dark:text-primary-200 truncate block">
+                  {entry.sessionCode}
+                </span>
+                <span className="text-xs text-primary-500 dark:text-primary-400">
+                  {formatTimeAgo(entry.timestamp)}
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5 flex-shrink-0">
+                <Button size="sm" onClick={() => handleReturnToSession(entry)}>
+                  Rejoin
+                </Button>
+                <button
+                  onClick={() => handleDismissSession(entry.sessionCode)}
+                  className="p-1.5 text-primary-400 dark:text-primary-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors cursor-pointer"
+                  title="Remove from recent sessions"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="card p-6 w-full max-w-md">
         {step === 'code' ? (
@@ -289,9 +353,9 @@ export default function HomePage() {
       <div className="flex items-start gap-3 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg max-w-md">
         <Clock className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
         <div className="text-sm">
-          <p className="font-medium text-amber-800 dark:text-amber-200">30-Day Data Retention</p>
+          <p className="font-medium text-amber-800 dark:text-amber-200">120-Day Data Retention</p>
           <p className="text-amber-700 dark:text-amber-300 mt-1">
-            Session data is automatically deleted after 30 days of inactivity. Use <strong>Export</strong> to save a backup, and <strong>Import</strong> to restore it into any session later.
+            Session data is automatically deleted after 120 days of inactivity. Use <strong>Export</strong> to save a backup, and <strong>Import</strong> to restore it into any session later.
           </p>
         </div>
       </div>

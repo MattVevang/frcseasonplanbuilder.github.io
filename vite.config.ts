@@ -9,6 +9,6 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-  // Base path - use '/' for custom domains, '/repo-name/' for project sites
-  base: '/',
+  // Base path - project site under mattvevang.github.io
+  base: '/frcseasonplanbuilder.github.io/',
 })

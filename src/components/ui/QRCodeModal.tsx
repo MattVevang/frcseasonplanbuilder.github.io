@@ -9,10 +9,11 @@ interface QRCodeModalProps {
 }
 
 export default function QRCodeModal({ isOpen, onClose, sessionCode, pin }: QRCodeModalProps) {
-  // Include PIN in URL if available - allows teammates to join directly
+  // Build full URL using the configured base path (e.g. /frcseasonplanbuilder.github.io/)
+  const base = import.meta.env.BASE_URL.replace(/\/$/, '')
   const sessionUrl = pin
-    ? `${window.location.origin}/session/${sessionCode}?pin=${pin}`
-    : `${window.location.origin}/session/${sessionCode}`
+    ? `${window.location.origin}${base}/session/${sessionCode}?pin=${pin}`
+    : `${window.location.origin}${base}/session/${sessionCode}`
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Share Session" size="sm">

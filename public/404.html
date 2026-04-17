@@ -2,16 +2,16 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href="/frcseasonplanbuilder.github.io/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>FRC Season Plan Builder</title>
     <script>
       // Single Page App redirect for GitHub Pages
       // Stores the path in sessionStorage and redirects to index.html
       // The SPA then reads this and navigates to the correct route
-      const path = window.location.pathname + window.location.search + window.location.hash;
+      var path = window.location.pathname + window.location.search + window.location.hash;
       sessionStorage.setItem('spa-redirect', path);
-      window.location.replace('/');
+      window.location.replace('/frcseasonplanbuilder.github.io/');
     </script>
   </head>
   <body>
